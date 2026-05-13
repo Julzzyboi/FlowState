@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-navy: #002b54;
+  --color-brand-main: #1466b8;
+  --color-brand-water: #4c95dd;
+  --color-brand-sky: #f0f7ff;
+
+  /*? Customized Colors  */
+  --color-Body : #EEF5FD;
+  --background-image-PCNav : linear-gradient(to bottom, var(--color-brand-navy), var(--color-brand-water));
+  --background-image-TabletNav : linear-gradient(to bottom, var(--color-brand-navy), var(--color-brand-water));
+  --background-image-MobileNav : linear-gradient(to bottom, var(--color-brand-navy), var(--color-brand-water));
+}
+
+/* *{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+} */
+/* 
+html, body {
+  background-color: ;  ;
+} */
