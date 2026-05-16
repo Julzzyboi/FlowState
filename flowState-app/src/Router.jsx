@@ -1,17 +1,18 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './Layouts/MainLayout';
+import DashboardPage from './Pages/01-Dashboard';
+import EducationPage from './Pages/02-Education';
+import CommunityPage from './Pages/03-Community';
+import HistoryPage from './Pages/04-History';
+import AccountPage from './Pages/05-Account';
 
-// Placeholder views (Swap these with your actual page files later)
-const DashboardPage = () => <div className="text-2xl font-bold text-slate-700">Dashboard View Dashboard Metrics Here</div>;
-const EducationPage = () => <div className="text-2xl font-bold text-slate-700">Education View View Lessons Here</div>;
-const CommunityPage = () => <div className="text-2xl font-bold text-slate-700">Community View Join Discussions Here</div>;
-const HistoryPage = () => <div className="text-2xl font-bold text-slate-700">History View Track Submissions Here</div>;
-const AccountPage = () => <div className="text-2xl font-bold text-slate-700">Account Settings Profile Configuration</div>;
+
+
 
 export default function AppRouter() {
   return (
-    <Router>
+    <Router>    
       <Routes>
         {/* MainLayout acts as the persistent frame around our pages */}
         <Route path="/" element={<MainLayout />}>
