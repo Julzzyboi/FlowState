@@ -25,7 +25,7 @@ export default function MainLayout() {
       </div>
 
       {/* 3. Main Content Area */}
-      <main className="flex-1 bg-Body p-8 z-20 md:rounded-l-[2.7rem] relative shadow-[-10px_0_30px_rgba(0,0,0,0.1)]">
+      <main className="flex-1 bg-Body p-8 z-20 md:rounded-l-[2.7rem] relative ">
         <div className="max-w-6xl h-auto mx-auto ml-5 mt-10">
           <h2 className="text-4xl font-bold text-MobileNav capitalize tracking-tight">
             {activeTab}
