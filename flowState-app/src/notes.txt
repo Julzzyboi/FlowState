@@ -8,9 +8,9 @@ cd flowState-app:
 
     npm i firebase
 
-    npm i socket.io
+    npm i socket.io-client
 
 cd flowState-backend:
 
-    npm i socket.io-client
+    npm i socket.io
     
