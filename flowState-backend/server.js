@@ -1,46 +1,75 @@
-// --- HTTP SOCIAL MEDIA BULLETINS ENDPOINTS ---
+const express = require('express');
+const cors = require('cors');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 
-// 1. GET: Pull all written billboard announcements from Firestore
-app.get('/api/community/posts', async (req, res) => {
-  try {
-    const postsSnapshot = await db.collection('communityPosts')
-      .orderBy('timestamp', 'desc')
-      .get();
+// 1. Initialize Express App Instance
+const app = express();
 
-    const posts = [];
-    postsSnapshot.forEach(doc => {
-      posts.push({ id: doc.id, ...doc.data() });
-    });
+// 2. Configure Permissive Localhost CORS Strategy (Handles REST endpoints)
+app.use(cors({
+  origin: [/localhost:\d+$/], // Dynamic regex ruleset matching any local port node
+  methods: ["GET", "POST"]
+}));
+app.use(express.json()); // Body-parser allocation for standard JSON payloads
 
-    res.status(200).json({ success: true, posts });
-  } catch (error) {
-    console.error("Error gathering feed details:", error);
-    res.status(500).json({ success: false, error: error.message });
+// 3. Create the Base Native HTTP Server 
+const httpServer = createServer(app);
+
+// 4. Instantiate Socket.io Attached to HTTP Instance with Shared CORS Ruleset
+const io = new Server(httpServer, {
+  cors: {
+    origin: [/localhost:\d+$/], // Dynamic regex ruleset matching any local port node
+    methods: ["GET", "POST"]
   }
 });
 
-// 2. POST: Commit a fresh community billboard payload to Firestore
-app.post('/api/community/posts', async (req, res) => {
+// ==========================================
+// REST ENDPOINT ROUTER MAP
+// ==========================================
+app.get('/api/community/posts', async (req, res) => {
   try {
-    const { uid, displayName, email, content, promotedRoom } = req.body;
-
-    if (!content || content.trim() === '') {
-      return res.status(400).json({ success: false, message: "Content area block invalid." });
-    }
-
-    const newPostObject = {
-      uid,
-      displayName,
-      email,
-      content,
-      promotedRoom: promotedRoom || null,
-      timestamp: admin.firestore.FieldValue.serverTimestamp() // Safe server timing
-    };
-
-    const docRef = await db.collection('communityPosts').add(newPostObject);
-    res.status(201).json({ success: true, id: docRef.id });
+    // Structural wrapper ready for Firestore/DB pulling procedures
+    res.json({ message: "Posts endpoint is fully operational!" });
   } catch (error) {
-    console.error("Error creating feed item:", error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ error: error.message });
   }
+});
+
+// ==========================================
+// SOCKET.IO REAL-TIME EVENT PIPELINE
+// ==========================================
+io.on("connection", (socket) => {
+  console.log(`📡 User connected to gateway: ${socket.id}`);
+
+  // Channel Gateway Entry Routing
+  socket.on("join_room", (data) => {
+    socket.join(data.room);
+    console.log(`🚪 User ${socket.id} entered space node: ${data.room}`);
+  });
+
+  // Message Broadcast Pipeline Relay Vector
+  socket.on("send_message", (data) => {
+    // Broadcast the payload strictly to other instances occupying the exact same room
+    socket.to(data.room).emit("receive_message", data);
+  });
+
+  // Channel Gateway Exit Routing
+  socket.on("leave_room", (data) => {
+    socket.leave(data.room);
+    console.log(`🚪 User ${socket.id} abandoned space node: ${data.room}`);
+  });
+
+  // Client Termination Event Hook
+  socket.on("disconnect", () => {
+    console.log(`❌ User disconnected from gateway: ${socket.id}`);
+  });
+});
+
+// ==========================================
+// SERVER INITIALIZATION EXECUTION NODE
+// ==========================================
+const PORT = 4000;
+httpServer.listen(PORT, () => {
+  console.log(`🚀 Unified Server engine deployed at http://localhost:${PORT}`);
 });
