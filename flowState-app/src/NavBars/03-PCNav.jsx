@@ -22,7 +22,7 @@ export default function PCNav({ activeTab }) {
   return (
     <LayoutGroup id="sidebarNavigation">
       {/* CHANGED: Lowered navbar container to z-10 so it sits behind the main content area */}
-      <nav className={`hidden lg:flex ${isMinimized ? 'w-24' : 'w-64'} bg-MobileNav h-screen sticky top-0 z-10 shadow-xl flex-col py-8 transition-all duration-500 overflow-visible`}>
+      <nav className={`hidden lg:flex ${isMinimized ? 'w-24' : 'w-64'} bg-MobileNav h-screen sticky top-0 z-10  flex-col py-8 transition-all duration-500 overflow-visible`}>
         
         {/* Logo Section */}
         {/* CHANGED: Added z-30 to ensure the logo button stays clickable on top */}

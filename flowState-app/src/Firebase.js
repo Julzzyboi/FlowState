@@ -1,19 +1,19 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth, GoogleAuthProvider } from "firebase/auth"; // Added imports
+import { getAuth, GoogleAuthProvider } from "firebase/auth"; 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBPmH8FM_teWvoMHmNaWY1ceBcIVD_DcxE",
-  authDomain: "flowstate-app-56167.firebaseapp.com",
-  projectId: "flowstate-app-56167",
-  storageBucket: "flowstate-app-56167.firebasestorage.app",
-  messagingSenderId: "230493859562",
-  appId: "1:230493859562:web:8b3ff2f15eb46fe575f193",
-  measurementId: "G-8Y244WJ9B9"
+  apiKey: Import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: Import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: Import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: Import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: Import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: Import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: Import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
-export const auth = getAuth(app); // Initialize Auth
-export const googleProvider = new GoogleAuthProvider(); // Create Google Provider
+export const auth = getAuth(app); 
+export const googleProvider = new GoogleAuthProvider(); 

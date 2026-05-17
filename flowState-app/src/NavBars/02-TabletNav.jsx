@@ -20,7 +20,7 @@ export default function TabletNav({ activeTab }) {
   return (
     <LayoutGroup id="tabletNavigation">
       {/* CHANGED: Dropped navbar frame depth wrapper context down to z-10 */}
-      <nav className="hidden md:flex lg:hidden w-24 bg-MobileNav h-screen sticky top-0 z-10 shadow-xl flex-col py-8 items-center overflow-visible">
+      <nav className="hidden md:flex lg:hidden w-24 bg-MobileNav h-screen sticky top-0 z-10 flex-col py-8 items-center overflow-visible">
         
         {/* Logo Container */}
         <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-16 relative z-30">

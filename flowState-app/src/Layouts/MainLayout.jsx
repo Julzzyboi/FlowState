@@ -1,49 +1,39 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom'; // Crucial imports
-import MobileNav from '../NavBars/01-MobileNav';
+import { Outlet, useLocation } from 'react-router-dom';
+import PCNav from '../NavBars/03-PCNav';       
 import TabletNav from '../NavBars/02-TabletNav';
-import PCNav from '../NavBars/03-PCNav';
+import MobileNav from  '../NavBars/01-MobileNav';
 
 export default function MainLayout() {
   const location = useLocation();
-  
-  // Magic: Strips '/dashboard' down to just 'dashboard' to use for your styling selectors
-  const activeTab = location.pathname.split('/')[1] || 'dashboard';
+  const currentTab = location.pathname.substring(1) || 'dashboard';
 
   return (
-    <div className="flex min-h-screen bg-MobileNav overflow-hidden">
+    /* Outer viewport wrapper frame uses the darker gradient/color */
+    <div className="w-screen h-screen flex flex-col md:flex-row overflow-hidden bg-MobileNav">
       
-      {/* 1. PC Navigation (Visible only on Desktop) */}
-      <div className="hidden lg:flex">
-        {/* We removed setActiveTab because standard Links handle that now */}
-        <PCNav key="pc-nav" activeTab={activeTab} />
+      {/* 1. MOBILE TOP/BOTTOM NAVIGATION CONTAINER */}
+      <div className="block md:hidden shrink-0 z-20">
+        <MobileNav activeTab={currentTab} />
       </div>
 
-      {/* 2. Tablet Navigation (Visible only on Tablet) */}
-      <div className="hidden md:flex lg:hidden">
-        <TabletNav key="tablet-nav" activeTab={activeTab} />
+      {/* 2. STATIONARY LEFT-SIDEBAR (Tablets & PCs) */}
+      <div className="hidden md:block h-full shrink-0 relative z-20">
+        <PCNav activeTab={currentTab} />
+        <TabletNav activeTab={currentTab} />
       </div>
 
-      {/* 3. Main Content Area */}
-      <main className="flex-1 bg-Body p-8 z-20 md:rounded-l-[2.7rem] relative ">
-        <div className="max-w-6xl h-auto mx-auto ml-5 mt-10">
-          <h2 className="text-4xl font-bold text-MobileNav capitalize tracking-tight">
-            {activeTab}
-          </h2>
-          
-          <div className="mt-10 p-10 bg-white rounded-3xl min-h-[60vh] shadow-sm">
-            {/* --- THE OUTLET --- */}
-            {/* This tag dynamically loads your individual page components */}
-            <Outlet />
-          </div>
-        </div>
+      {/* 3. RESTORED: THE ORIGINAL MAIN PORT CANVAS */}
+      {/* CHANGED:
+        - bg-Body: Sets the workspace panel background color back to your custom light gray/blue palette.
+        - md:rounded-l-[2.5rem]: Restores the classic deep curve specifically along the left edge where it catches the sliding navigation indicator tabs!
+        - Removed margin padding offsets so it expands flush against the top, bottom, and right edges of the display just like your photo.
+      */}
+      <main className="flex-1 h-full bg-Body md:rounded-l-[2.5rem] overflow-y-auto min-w-0 relative">
+        {/* Your subpages (Dashboard, Community, etc.) render here */}
+        <Outlet />
       </main>
 
-      {/* 4. Mobile Navigation (Fixed at bottom) */}
-      <div className="md:hidden">
-        <MobileNav key="mobile-nav" activeTab={activeTab} />
-      </div>
-
-    </div>  
+    </div>
   );
 }
