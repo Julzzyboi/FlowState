@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Ignore backend environment variables and keys
+flowState-backend/.env
+flowState-backend/serviceAccountKey.json
+
+# Ignore frontend environment variables
+flowState-app/.env
