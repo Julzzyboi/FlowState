@@ -1,0 +1,16 @@
+NPM NEEDED DOWNLOADS IN TERMINAL
+
+cd flowState-app:
+
+    npm i react-router-dom
+
+    npm i framer-motion
+
+    npm i firebase
+
+    npm i socket.io
+
+cd flowState-backend:
+
+    npm i socket.io-client
+    
