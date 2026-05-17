@@ -1,0 +1,487 @@
+/* ── Education.css ── */
+
+/* Page */
+.edu-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 32px 16px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.edu-outer {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Shared highlight span ── */
+.highlight {
+  color: #3b82f6;
+}
+
+/* ─────────────────────────────────────
+   HERO
+───────────────────────────────────── */
+.edu-hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%);
+  border-radius: 16px;
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+}
+
+.edu-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.edu-hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.edu-hero-subtitle {
+  font-size: 11px;
+  letter-spacing: 1px;
+  opacity: 0.7;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+
+.edu-hero-desc {
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1.6;
+  margin: 0 0 16px;
+  max-width: 420px;
+}
+
+.edu-tag-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.edu-tag {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 11px;
+}
+
+.edu-circle {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.edu-circle-1 {
+  right: -30px;
+  top: -30px;
+  width: 180px;
+  height: 180px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.edu-circle-2 {
+  right: 60px;
+  top: 40px;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ─────────────────────────────────────
+   SECTION WRAPPER
+───────────────────────────────────── */
+.edu-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.edu-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 18px;
+}
+
+/* ─────────────────────────────────────
+   WHY WATER MATTERS CARDS
+───────────────────────────────────── */
+.edu-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.edu-info-card {
+  border-radius: 12px;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edu-icon-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.edu-card-img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.edu-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.edu-card-desc {
+  font-size: 11px;
+  color: #475569;
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* ─────────────────────────────────────
+   TWO-COLUMN LAYOUT
+───────────────────────────────────── */
+.edu-two-col-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.edu-panel {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.edu-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.edu-panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.edu-panel-badge {
+  font-size: 11px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-weight: 600;
+}
+
+/* ─────────────────────────────────────
+   HYDRATION — PROGRESS BAR
+───────────────────────────────────── */
+.edu-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.edu-progress-track {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.edu-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.edu-progress-label {
+  font-size: 11px;
+  color: #64748b;
+  text-align: right;
+}
+
+/* ─────────────────────────────────────
+   HYDRATION — SCHEDULE CHECKLIST
+───────────────────────────────────── */
+.edu-schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edu-schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.edu-schedule-item.checked {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.edu-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.edu-checkbox.checked {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.edu-checkmark {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.edu-schedule-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.edu-schedule-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.edu-schedule-time.checked {
+  color: #1d4ed8;
+}
+
+.edu-schedule-note {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.edu-schedule-amount {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.edu-schedule-amount.checked {
+  color: #1d4ed8;
+}
+
+/* ─────────────────────────────────────
+   TIP BOX
+───────────────────────────────────── */
+.edu-tip-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.edu-tip-box.green {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.edu-tip-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.edu-tip-text {
+  font-size: 11px;
+  color: #334155;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─────────────────────────────────────
+   SANITATION — STATS
+───────────────────────────────────── */
+.edu-stats-row {
+  display: flex;
+  gap: 8px;
+}
+
+.edu-stat-box {
+  flex: 1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.edu-stat-value {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.edu-stat-label {
+  font-size: 9px;
+  color: #64748b;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ─────────────────────────────────────
+   SANITATION — STEPS
+───────────────────────────────────── */
+.edu-steps-heading {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.edu-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.edu-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.edu-step-track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.edu-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.edu-step-connector {
+  width: 2px;
+  height: 24px;
+  background: #bfdbfe;
+}
+
+.edu-step-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-top: 5px;
+  padding-bottom: 10px;
+}
+
+.edu-step-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.edu-step-desc {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* ─────────────────────────────────────
+   QUICK FACTS
+───────────────────────────────────── */
+.edu-facts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.edu-fact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+  padding-left: 4px;
+}
+
+.edu-fact-border {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: #1d4ed8;
+}
+
+.edu-fact-icon {
+  font-size: 16px;
+  margin-left: 10px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.edu-fact-text {
+  font-size: 13px;
+  color: #334155;
+  margin: 0;
+  line-height: 1.6;
+}
