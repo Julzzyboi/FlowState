@@ -389,7 +389,7 @@ const Footer = () => (
 );
 
 
-export default function App() {
+export default function LandingOfficial() {
   return (
     <div className="app">
       <Navbar />

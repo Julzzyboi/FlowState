@@ -10,6 +10,7 @@ import CommunityPage from './Pages/03-Community';
 import HistoryPage from './Pages/04-History';
 import AccountPage from './Pages/05-Account';
 import LandingPage from './Pages/TestLanding'; 
+import LandingOfficial from './Pages/00-LandingPage';
 
 export default function AppRouter() {
   const [user, setUser] = useState(null);
@@ -37,7 +38,7 @@ export default function AppRouter() {
     <Router>
       <Routes>
         {!user ? (
-          <Route path="*" element={<LandingPage />} />
+          <Route path="*" element={<LandingOfficial />} />
         ) : (
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
