@@ -9,7 +9,7 @@ import PropertiesComparisonCard from '../Components/History/PropertiesComparison
 import VolumeDistributionCard from '../Components/History/VolumeDistributionCard';
 import TaskCompletionPieCard from '../Components/History/TaskCompletionPieCard';
 
-export default function History() {
+export default function HistoryPage() {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [dashboardLogs, setDashboardLogs] = useState([]);
   const [sanitationLogs, setSanitationLogs] = useState([]); 
@@ -43,7 +43,7 @@ export default function History() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#EEF5FD] px-4 sm:px-8 lg:px-10 pt-6 pb-32 flex flex-col justify-start items-center" style={{ fontFamily: "'Comfortaa', sans-serif" }}>
+    <div className="w-full min-h-screen bg-Body px-4 sm:px-8 lg:px-10 pt-6 pb-32 flex flex-col justify-start items-center" style={{ fontFamily: "'Comfortaa', sans-serif" }}>
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&display=swap');
@@ -103,7 +103,7 @@ export default function History() {
 
         {/* 1. COMPLETE UNRESTRICTED INTAKE LIST COMPONENT OR SKELETON */}
         {isPageLoading ? (
-          <div className="w-full bg-white rounded-[2rem] p-8 border border-slate-100/50 animate-pulse h-[200px] flex flex-col gap-4">
+          <div className="w-full bg-white rounded-4xl p-8 border border-slate-100/50 animate-pulse h-50 flex flex-col gap-4">
             <div className="flex justify-between items-center w-full">
               <div className="h-5 bg-slate-200 rounded-md w-1/4" />
               <div className="h-6 bg-slate-100 rounded-full w-20" />
@@ -121,14 +121,14 @@ export default function History() {
 
         {/* 2. TOP MATRIX CHART GRID */}
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          <div className="lg:col-span-6 h-[400px] w-full flex flex-col">
+          <div className="lg:col-span-6 h-100 w-full flex flex-col">
             {isPageLoading ? (
-              <div className="w-full h-full bg-white rounded-[2rem] p-8 border border-slate-100/50 animate-pulse flex flex-col justify-between">
+              <div className="w-full h-full bg-white rounded-4xl p-8 border border-slate-100/50 animate-pulse flex flex-col justify-between">
                 <div className="flex flex-col gap-2">
                   <div className="h-4 bg-slate-200 rounded w-1/3" />
                   <div className="h-3 bg-slate-100 rounded w-1/2" />
                 </div>
-                <div className="w-full flex items-end justify-around h-[220px] pt-4">
+                <div className="w-full flex items-end justify-around h-55 pt-4">
                   <div className="w-12 bg-slate-200 rounded-t h-[60%]" />
                   <div className="w-12 bg-slate-100 rounded-t h-[40%]" />
                   <div className="w-12 bg-slate-200 rounded-t h-[85%]" />
@@ -140,9 +140,9 @@ export default function History() {
             )}
           </div>
           
-          <div className="lg:col-span-6 h-[400px] w-full flex flex-col">
+          <div className="lg:col-span-6 h-100 w-full flex flex-col">
             {isPageLoading ? (
-              <div className="w-full h-full bg-white rounded-[2rem] p-8 border border-slate-100/50 animate-pulse flex flex-col justify-between">
+              <div className="w-full h-full bg-white rounded-4xl p-8 border border-slate-100/50 animate-pulse flex flex-col justify-between">
                 <div className="flex flex-col gap-2">
                   <div className="h-4 bg-slate-200 rounded w-1/3" />
                   <div className="h-3 bg-slate-100 rounded w-1/2" />
@@ -157,9 +157,9 @@ export default function History() {
 
         {/* 3. BOTTOM SPLIT CHART GRID */}
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          <div className="lg:col-span-6 h-[380px] w-full flex flex-col">
+          <div className="lg:col-span-6 h-95 w-full flex flex-col">
             {isPageLoading ? (
-              <div className="w-full h-full bg-white rounded-[2rem] p-8 border border-slate-100/50 animate-pulse flex flex-col justify-between">
+              <div className="w-full h-full bg-white rounded-4xl p-8 border border-slate-100/50 animate-pulse flex flex-col justify-between">
                 <div className="flex flex-col gap-2">
                   <div className="h-4 bg-slate-200 rounded w-1/4" />
                   <div className="h-3 bg-slate-100 rounded w-1/3" />
@@ -175,14 +175,14 @@ export default function History() {
             )}
           </div>
           
-          <div className="lg:col-span-6 h-[380px] w-full flex flex-col">
+          <div className="lg:col-span-6 h-95 w-full flex flex-col">
             {isPageLoading ? (
-              <div className="w-full h-full bg-white rounded-[2rem] p-8 border border-slate-100/50 animate-pulse flex flex-col items-center justify-between">
+              <div className="w-full h-full bg-white rounded-4xl p-8 border border-slate-100/50 animate-pulse flex flex-col items-center justify-between">
                 <div className="flex flex-col gap-2 w-full items-start">
                   <div className="h-4 bg-slate-200 rounded w-1/3" />
                   <div className="h-3 bg-slate-100 rounded w-1/2" />
                 </div>
-                <div className="w-40 h-40 rounded-full border-[12px] border-slate-100/70 flex items-center justify-center my-auto" />
+                <div className="w-40 h-40 rounded-full border-12 border-slate-100/70 flex items-center justify-center my-auto" />
                 <div className="h-3 bg-slate-100 rounded w-24 mb-2" />
               </div>
             ) : (

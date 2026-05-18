@@ -96,13 +96,13 @@ export default function SanitationTrackerCard() {
   const strokeDashoffset = openArcLength - (completionPercentage / 100) * openArcLength;
 
   return (
-    <div className="w-full bg-white rounded-[2rem] shadow-[0_10px_35px_rgba(16,185,129,0.015)] p-8 border border-emerald-100/40 flex flex-col md:flex-row gap-10 items-center justify-between min-h-[340px]">
+    <div className="w-full bg-white rounded-4xl shadow-[0_10px_35px_rgba(16,185,129,0.015)] p-8 border border-emerald-100/40 flex flex-col md:flex-row gap-10 items-center justify-between min-h-85">
       
       {/* 1. EMBOLDENED UP-SIZED GAUGE CONTROLLER (LEFT SIDE) */}
       <div className="w-full md:w-5/12 flex flex-col items-center justify-center self-stretch py-4">
         <div className="relative w-64 h-64 flex items-center justify-center">
           
-          <svg className="w-full h-full transform rotate-[135deg]" viewBox="0 0 220 220">
+          <svg className="w-full h-full transform rotate-135" viewBox="0 0 220 220">
             {/* SOLID BACKGROUND TRACK */}
             <circle
               cx="110"
@@ -176,7 +176,7 @@ export default function SanitationTrackerCard() {
         </form>
 
         {/* RENDER GRID LOG LISTING ITEMS */}
-        <div className="flex flex-col gap-2.5 max-h-[220px] overflow-y-auto pr-1 clean-history-box flex-1 min-h-[140px]">
+        <div className="flex flex-col gap-2.5 max-h-55 overflow-y-auto pr-1 clean-history-box flex-1 min-h-35">
           {activities.length === 0 ? (
             <div className="w-full h-full flex flex-col items-center justify-center py-12 text-center border border-dashed border-slate-100 rounded-2xl bg-slate-50/20">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Workspace Blank</span>

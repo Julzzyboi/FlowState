@@ -81,7 +81,7 @@ export default function CreateCommunityModal({ isOpen, onClose, onCreateRoom }) 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., UI/UX Designers"
-              className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 outline-none text-white focus:border-[#46a4fe] transition-all font-medium text-sm"
+              className="w-full bg-Body border border-white/10 rounded-xl px-4 py-3 outline-none text-white focus:border-[#46a4fe] transition-all font-medium text-sm"
               autoFocus
               required
               disabled={isSubmitting}

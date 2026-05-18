@@ -31,7 +31,7 @@ export default function WeeklyTracker({ currentDayPercentage, historyLogs }) {
   }, [currentPhDayIndex]);
 
   return (
-    <div className="w-full bg-white rounded-[2rem] shadow-[0_10px_35px_rgba(0,132,255,0.015)] p-6 border border-slate-100/50 flex flex-col gap-5">
+    <div className="w-full bg-white rounded-4xl shadow-[0_10px_35px_rgba(0,132,255,0.015)] p-6 border border-slate-100/50 flex flex-col gap-5">
       <div className="flex justify-between items-center w-full">
         <div>
           <h3 className="text-xs font-black text-slate-800 tracking-tight">Weekly Activity</h3>
@@ -66,14 +66,14 @@ export default function WeeklyTracker({ currentDayPercentage, historyLogs }) {
             <div 
               key={dayName}
               ref={isToday ? activeDayRef : null}
-              className={`flex flex-col items-center gap-2.5 flex-1 min-w-[44px] py-2 rounded-2xl transition-all duration-300 snap-center ${
+              className={`flex flex-col items-center gap-2.5 flex-1 min-w-11 py-2 rounded-2xl transition-all duration-300 snap-center ${
                 isToday ? 'bg-blue-50/60 border border-blue-200/50 shadow-sm' : 'border border-transparent'
               }`}
             >
               <div className="w-2.5 h-24 bg-slate-50 rounded-full relative overflow-hidden flex flex-col justify-end border border-slate-100/30">
                 <div 
                   className={`w-full rounded-full transition-all duration-700 ease-out ${
-                    isToday ? 'bg-gradient-to-t from-blue-500 to-cyan-400' : 'bg-slate-300'
+                    isToday ? 'bg-linear-to-t from-blue-500 to-cyan-400' : 'bg-slate-300'
                   }`}
                   style={{ height: `${Math.min(barHeight, 100)}%` }}
                 />
