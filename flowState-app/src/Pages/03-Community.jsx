@@ -9,11 +9,13 @@ import {
   doc, 
   getDoc, 
   setDoc, 
+  updateDoc,
   deleteDoc,
   query, 
   orderBy, 
   limit 
 } from "firebase/firestore";
+import CommunityGrid from "../Components/Community/CommunityGrid"; 
 
 const SOCKET_SERVER_URL = "http://localhost:5000";
 const socket = io(SOCKET_SERVER_URL, { autoConnect: false });
@@ -31,10 +33,13 @@ export default function CommunityPage() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isRoomRestoring, setIsRoomRestoring] = useState(!!urlRoomId);
   
-  // 🔘 Modal Window Trigger
+  // Modal Trigger & Control States
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // 👈 Control flag for custom confirmation layout
+  const [isEditing, setIsEditing] = useState(false); 
+  const [showManageMenu, setShowManageMenu] = useState(false); 
 
-  // 📝 RETAINED ORIGINAL INPUT FORM STATES
+  // INPUT FORM STATES
   const [roomId, setRoomId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -42,8 +47,9 @@ export default function CommunityPage() {
   const fileInputRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Communication & Search States
+  // Communication, Search & Sorting States
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("recent"); 
   const [activeChatRoom, setActiveChatRoom] = useState(null);
   const [currentMessageText, setCurrentMessageText] = useState("");
   const messagesEndRef = useRef(null);
@@ -53,6 +59,13 @@ export default function CommunityPage() {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 50);
   };
+
+  // Close administration dropdown automatically when clicking anywhere else
+  useEffect(() => {
+    const closeDropdown = () => setShowManageMenu(false);
+    window.addEventListener("click", closeDropdown);
+    return () => window.removeEventListener("click", closeDropdown);
+  }, []);
 
   // 1. AUTHENTICATION STATE LISTENER
   useEffect(() => {
@@ -113,6 +126,22 @@ export default function CommunityPage() {
     };
   }, [urlRoomId, navigate]);
 
+  // Keep active panel data synced with administrative changes
+  useEffect(() => {
+    if (activeChatRoom && rooms.length > 0) {
+      const updatedMatch = rooms.find(r => r.id === activeChatRoom.id);
+      if (updatedMatch) {
+        if (
+          updatedMatch.title !== activeChatRoom.title || 
+          updatedMatch.description !== activeChatRoom.description || 
+          updatedMatch.coverPhoto !== activeChatRoom.coverPhoto
+        ) {
+          setActiveChatRoom(updatedMatch);
+        }
+      }
+    }
+  }, [rooms, activeChatRoom]);
+
   // 3. ACTIVE CHAT SYNC LOOP
   useEffect(() => {
     if (!activeChatRoom || !authUser) {
@@ -160,7 +189,7 @@ export default function CommunityPage() {
     };
   }, [activeChatRoom, authUser]);
 
-  // 🌟 ORIGINAL BASE64 COMPRESSION (Bypasses Firestore 1MB string size crashes)
+  // BASE64 COMPRESSION
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -182,32 +211,104 @@ export default function CommunityPage() {
     reader.readAsDataURL(file);
   };
 
-  // 🔄 RE-INTEGRATED TRANSACTION CARD ACTION 
-  const handleCreateRoomCard = async (e) => {
+  // OPEN MODAL FOR CREATION
+  const handleOpenCreateModal = () => {
+    setIsEditing(false);
+    setRoomId("");
+    setTitle("");
+    setDescription("");
+    setCoverPhoto(null);
+    setIsModalOpen(true);
+  };
+
+  // OPEN MODAL FOR EDITING
+  const handleOpenEditModal = () => {
+    if (!activeChatRoom) return;
+    setIsEditing(true);
+    setRoomId(activeChatRoom.id); 
+    setTitle(activeChatRoom.title);
+    setDescription(activeChatRoom.description);
+    setCoverPhoto(activeChatRoom.coverPhoto);
+    setIsModalOpen(true);
+  };
+
+  // UNIFIED OPERATIONS SUBMIT (HANDLES DOCUMENT SAVES & UPDATE MODIFICATIONS)
+  const handleFormSubmission = async (e) => {
     e.preventDefault();
     if (!title.trim() || !description.trim() || !roomId.trim()) return;
     setIsSubmitting(true);
 
-    const formattedId = roomId.trim().toUpperCase().replace(/\s+/g, "_");
     try {
-      await setDoc(doc(db, "rooms", formattedId), {
-        title: title.trim(),
-        description: description.trim(),
-        coverPhoto: coverPhoto || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=60",
-        createdAt: Date.now()
-      });
+      if (isEditing) {
+        const roomDocRef = doc(db, "rooms", roomId);
+        await updateDoc(roomDocRef, {
+          title: title.trim(),
+          description: description.trim(),
+          coverPhoto: coverPhoto
+        });
+      } else {
+        const formattedId = roomId.trim().toUpperCase().replace(/\s+/g, "_");
+        await setDoc(doc(db, "rooms", formattedId), {
+          title: title.trim(),
+          description: description.trim(),
+          coverPhoto: coverPhoto || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=60",
+          createdAt: Date.now()
+        });
+      }
       
-      // Clean form state variables on completion
       setTitle(""); 
       setDescription(""); 
       setRoomId(""); 
       setCoverPhoto(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
-      setIsModalOpen(false); // Snap modal window shut on success!
+      setIsModalOpen(false);
     } catch (err) {
-      console.error("Room creation error:", err);
+      console.error("Room operational transaction failure:", err);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // FIRESTORE HARD PURGE FUNCTIONALITY (CALLED VIA USER CONFIRMATION MODAL)
+  const handleConfirmDeleteRoom = async () => {
+    if (!activeChatRoom) return;
+    setIsSubmitting(true);
+    try {
+      const targetId = activeChatRoom.id;
+      socket.emit("leave_room", { room: targetId, userId: authUser?.uid });
+      
+      await deleteDoc(doc(db, "rooms", targetId));
+      
+      setIsDeleteModalOpen(false);
+      setActiveChatRoom(null);
+      navigate("/community");
+    } catch (err) {
+      console.error("Critical failure during community purge:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ROSTER JOIN BEHAVIOR
+  const handleJoinRoom = async (room) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const googleUserPayload = {
+      id: user.uid,
+      name: user.displayName || "Google User",
+      email: user.email,
+      avatar: user.photoURL,
+      joinedAt: Date.now()
+    };
+
+    try {
+      await setDoc(doc(db, "rooms", room.id, "members", user.uid), googleUserPayload);
+      navigate(`/community/${room.id.toLowerCase()}`);
+      setActiveChatRoom(room);
+      scrollToBottom();
+    } catch (err) {
+      console.error("Roster join crash:", err);
     }
   };
 
@@ -256,9 +357,203 @@ export default function CommunityPage() {
     }
   };
 
+  // ==========================================
+  // 📥 RENDERABLE PIECE: SHARED FORM MODAL
+  // ==========================================
+  const renderSharedModal = () => (
+    <AnimatePresence>
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            onClick={() => !isSubmitting && setIsModalOpen(false)} 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+          />
+          
+          <motion.div 
+            initial={{ y: 30, opacity: 0 }} 
+            animate={{ y: 0, opacity: 1 }} 
+            exit={{ y: 30, opacity: 0 }} 
+            className="bg-[#111c24] text-white w-full max-w-md p-8 rounded-[2.5rem] relative shadow-2xl border border-white/10"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold">
+                {isEditing ? "✨ Update Space Details" : "✨ Create a New Space"}
+              </h3>
+              <button 
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-xs"
+                disabled={isSubmitting}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleFormSubmission} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Room ID</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={roomId} 
+                  onChange={(e) => setRoomId(e.target.value)} 
+                  placeholder="e.g., PRO_ZONE" 
+                  className="w-full bg-slate-900 border border-white/10 px-4 py-3 rounded-xl text-xs outline-none focus:border-[#46a4fe] transition-colors disabled:opacity-40 font-mono"
+                  disabled={isSubmitting || isEditing} 
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Display Title</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={title} 
+                  onChange={(e) => setTitle(e.target.value)} 
+                  placeholder="e.g., Production Room" 
+                  className="w-full bg-slate-900 border border-white/10 px-4 py-3 rounded-xl text-xs outline-none focus:border-[#46a4fe] transition-colors"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Description</label>
+                <textarea 
+                  required 
+                  value={description} 
+                  onChange={(e) => setDescription(e.target.value)} 
+                  placeholder="Verified entry points..." 
+                  rows={3}
+                  className="w-full bg-slate-900 border border-white/10 px-4 py-3 rounded-xl text-xs outline-none focus:border-[#46a4fe] transition-colors resize-none"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Cover Banner</label>
+                <div 
+                  onClick={() => !isSubmitting && fileInputRef.current.click()}
+                  className="border-2 border-dashed border-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/5 hover:border-white/20 transition-all flex flex-col items-center justify-center min-h-22.5"
+                >
+                  {coverPhoto ? (
+                    <div className="w-full h-20 relative rounded-lg overflow-hidden">
+                      <img src={coverPhoto} alt="Banner Preview" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-[10px] font-bold">Change Image</div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-white/40 font-medium py-3">🖼️ Click to choose banner photo</p>
+                  )}
+                </div>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  ref={fileInputRef} 
+                  onChange={handleImageUpload} 
+                  className="hidden" 
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="bg-[#46a4fe] text-white font-bold h-12 rounded-xl text-xs uppercase tracking-wider shadow-md shadow-[#46a4fe]/20 hover:bg-[#358edb] transition-all active:scale-95 disabled:bg-slate-700 disabled:scale-100 mt-2 flex items-center justify-center"
+              >
+                {isSubmitting 
+                  ? "Processing Workspace..." 
+                  : isEditing 
+                    ? "Save Modifications" 
+                    : "Create Community"}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+
+  // ======================================================
+  // 🗑️ RENDERABLE PIECE: CUSTOM REFERENCE CONFIRMATION MODAL
+  // ======================================================
+  const renderConfirmationModal = () => (
+    <AnimatePresence>
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          {/* Backdrop Layer */}
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            onClick={() => !isSubmitting && setIsDeleteModalOpen(false)} 
+            className="absolute inset-0 bg-black/50 backdrop-blur-xs" 
+          />
+          
+          {/* Main Context Window */}
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }} 
+            animate={{ scale: 1, opacity: 1 }} 
+            exit={{ scale: 0.95, opacity: 0 }} 
+            className="relative p-4 w-full max-w-md max-h-full"
+          >
+            <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl p-4 md:p-6">
+              {/* Close Button X */}
+              <button 
+                type="button" 
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="absolute top-3 right-2.5 text-slate-400 bg-transparent hover:bg-slate-100 hover:text-slate-900 rounded-xl text-sm w-9 h-9 ml-auto inline-flex justify-center items-center cursor-pointer transition-colors"
+                disabled={isSubmitting}
+              >
+                <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18 17.94 6M18 18 6.06 6"/>
+                </svg>
+                <span className="sr-only">Close modal</span>
+              </button>
+              
+              {/* Context Container */}
+              <div className="p-4 md:p-5 text-center">
+                {/* Warning Triangle/Exclamation Icon */}
+                <svg className="mx-auto mb-4 text-red-500 w-12 h-12 animate-bounce-short" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 13V8m0 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                </svg>
+                
+                <h3 className="mb-6 text-sm font-bold text-slate-800 leading-relaxed">
+                  Are you sure you want to delete <span className="text-red-600">"{activeChatRoom?.title}"</span>? This action removes all records and data history permanently.
+                </h3>
+                
+                {/* Interface Decision Triggers */}
+                <div className="flex items-center space-x-4 justify-center">
+                  <button 
+                    type="button" 
+                    onClick={handleConfirmDeleteRoom}
+                    disabled={isSubmitting}
+                    className="text-white bg-red-600 hover:bg-red-700 shadow-md shadow-red-600/10 font-bold rounded-xl text-xs uppercase px-4 py-2.5 focus:outline-none transition-all active:scale-95 disabled:bg-slate-400 cursor-pointer"
+                  >
+                    {isSubmitting ? "Purging..." : "Yes, I'm sure"}
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setIsDeleteModalOpen(false)}
+                    disabled={isSubmitting}
+                    className="text-slate-600 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl text-xs uppercase px-4 py-2.5 focus:outline-none transition-all active:scale-95 cursor-pointer"
+                  >
+                    No, cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+
+  // VIEW RENDER LAYER 1: LOADING STATE
   if (authLoading || isRoomRestoring) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-Body z-10 relative gap-4 min-h-[50vh]">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-Body z-20 relative gap-4 min-h-[50vh]">
         <div className="flex space-x-2 animate-pulse">
           <div className="w-3 h-3 bg-[#46a4fe] rounded-full"></div>
           <div className="w-3 h-3 bg-[#46a4fe]/60 rounded-full"></div>
@@ -271,9 +566,10 @@ export default function CommunityPage() {
     );
   }
 
+  // VIEW RENDER LAYER 2: AUTH REJECTION BLOCKER
   if (!authUser) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-[#f8fafc] z-10 relative p-6">
+      <div className="w-full h-full flex items-center justify-center bg-[#f8fafc] z-20 relative p-6">
         <div className="bg-white border border-slate-200 p-8 rounded-4xl max-w-sm text-center shadow-xl">
           <span className="text-3xl">🔒</span>
           <h2 className="text-sm font-black text-slate-800 mt-3 uppercase tracking-wider">Access Restricted</h2>
@@ -283,13 +579,11 @@ export default function CommunityPage() {
     );
   }
 
-  // =========================================================
-  // VIEW RENDER 1: THE ACTIVE CHAT WINDOW
-  // =========================================================
+  // VIEW RENDER LAYER 3: ACTIVE ROOM PANEL WINDOW
   if (activeChatRoom) {
     return (
-      <div className="w-full h-full max-h-full flex flex-col bg-Body relative overflow-hidden z-10">
-        <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0 shadow-xs z-10">
+      <div className="w-full h-full max-h-full flex flex-col bg-Body relative overflow-hidden z-20">
+        <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0 shadow-xs z-30 relative">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={handleLeaveRoom}
@@ -302,8 +596,51 @@ export default function CommunityPage() {
               <p className="text-[11px] text-slate-400 mt-0.5 truncate">{activeChatRoom.description}</p>
             </div>
           </div>
-          <div className="bg-[#46a4fe]/10 text-[#46a4fe] px-2.5 py-1 rounded-full text-[10px] font-bold border border-[#46a4fe]/20 shrink-0 ml-2 shadow-3xs">
-            <span>👥 {members.length} Online</span>
+          
+          <div className="flex items-center gap-2 shrink-0 ml-2">
+            <div className="bg-[#46a4fe]/10 text-[#46a4fe] px-2.5 py-1 rounded-full text-[10px] font-bold border border-[#46a4fe]/20 shadow-3xs">
+              <span>👥 {members.length} Online</span>
+            </div>
+
+            {/* 🛠️ Administrative Action Portal Dropdown */}
+            <div className="relative">
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowManageMenu(!showManageMenu);
+                }}
+                className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs transition-all shadow-3xs cursor-pointer font-bold select-none"
+              >
+                •••
+              </button>
+              
+              <AnimatePresence>
+                {showManageMenu && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 mt-1.5 w-40 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-left overflow-hidden"
+                  >
+                    <button
+                      type="button"
+                      onClick={handleOpenEditModal}
+                      className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer"
+                    >
+                      ✏️ Edit Space
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsDeleteModalOpen(true)} // 👈 Triggers our new styled modal window 
+                      className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors border-t border-slate-100 flex items-center gap-2 cursor-pointer"
+                    >
+                      🗑️ Delete Space
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
@@ -359,17 +696,18 @@ export default function CommunityPage() {
             </div>
           </div>
         </div>
+
+        {/* Global Component Hooks */}
+        {renderSharedModal()}
+        {renderConfirmationModal()}
       </div>
     );
   }
 
-  // =========================================================
-  // VIEW RENDER 2: THE COMMUNITIES MAIN SEARCH & GRID 
-  // =========================================================
+  // VIEW RENDER LAYER 4: MAIN DASHBOARD DISCOVERY GRID
   return (
-    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto text-slate-800 flex-1 flex flex-col gap-6 animate-fadeIn pb-28 relative bg-Body z-10">
+    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto text-slate-800 flex-1 flex flex-col gap-6 animate-fadeIn pb-28 relative bg-Body z-20">
       
-      {/* GRID PAGE HEADER */}
       <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Community <span className="text-[#46a4fe]">Spaces</span></h1>
@@ -377,202 +715,52 @@ export default function CommunityPage() {
         </div>
 
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleOpenCreateModal}
           className="bg-[#46a4fe] text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-[#46a4fe]/10 hover:scale-[1.02] transition-all text-xs uppercase tracking-wider cursor-pointer"
         >
           + Add a Community
         </button>
       </div>
 
-      {/* FILTER SEARCH FIELD */}
-      <div className="w-full max-w-md">
-        <input 
-          type="text" 
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="🔍 Search rooms by title..."
-          className="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-2xl text-xs outline-none focus:border-[#46a4fe] shadow-3xs font-medium"
-        />
-      </div>
-
-      {/* RENDER DYNAMIC GRID DISPLAY CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        {isRoomsLoading ? (
-          Array.from({ length: 4 }).map((_, indices) => (
-            <div key={indices} className="bg-white border border-slate-200 rounded-4xl flex flex-col justify-between overflow-hidden min-h-85 shadow-xs animate-pulse">
-              <div className="w-full h-40 bg-slate-200" />
-              <div className="p-5 flex-1 flex flex-col justify-between gap-4">
-                <div className="space-y-2">
-                  <div className="h-4 bg-slate-200 rounded-md w-3/4" />
-                  <div className="h-3 bg-slate-200 rounded-md w-full" />
-                </div>
-                <div className="h-10 bg-slate-200 rounded-2xl w-full mt-auto" />
-              </div>
-            </div>
-          ))
-        ) : (
-          rooms.filter(r => r.title?.toLowerCase().includes(searchQuery.toLowerCase())).map((room) => (
-            <div key={room.id} className="bg-white border border-slate-200 rounded-4xl shadow-md shadow-slate-100 hover:shadow-xl hover:border-slate-300 transition-all duration-300 flex flex-col justify-between overflow-hidden min-h-85 transform hover:-translate-y-0.5">
-              <div className="w-full h-40 bg-slate-100 relative overflow-hidden">
-                <img src={room.coverPhoto || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=60"} alt={room.title} className="w-full h-full object-cover" />
-                <span className="absolute top-3 left-3 bg-black/60 text-white text-[9px] font-mono px-2 py-0.5 rounded shadow-sm">{room.id}</span>
-              </div>
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <h4 className="text-base font-extrabold text-slate-900 mb-1.5 truncate">{room.title}</h4>
-                  <p className="text-xs text-slate-500 line-clamp-3 mb-4">{room.description}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const user = auth.currentUser;
-                    if (!user) return;
-
-                    const googleUserPayload = {
-                      id: user.uid,
-                      name: user.displayName || "Google User",
-                      email: user.email,
-                      avatar: user.photoURL,
-                      joinedAt: Date.now()
-                    };
-
-                    try {
-                      await setDoc(doc(db, "rooms", room.id, "members", user.uid), googleUserPayload);
-                      navigate(`/community/${room.id.toLowerCase()}`);
-                      setActiveChatRoom(room);
-                      scrollToBottom();
-                    } catch (err) {
-                      console.error("Roster join crash:", err);
-                    }
-                  }}
-                  className="w-full bg-slate-50 hover:bg-[#46a4fe] text-slate-700 hover:text-white border border-slate-200 font-extrabold py-3 px-4 rounded-2xl text-xs uppercase shadow-3xs hover:shadow-md hover:shadow-[#46a4fe]/20 active:scale-98 transition-all mt-auto cursor-pointer"
-                >
-                  Join Community →
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* =========================================================
-          MODAL INTERFACE CONTAINER (Retains all original inputs)
-          ========================================================= */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-            
-            {/* Backdrop Layer */}
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              onClick={() => !isSubmitting && setIsModalOpen(false)} 
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
-            />
-            
-            {/* Form Content Panel */}
-            <motion.div 
-              initial={{ y: 30, opacity: 0 }} 
-              animate={{ y: 0, opacity: 1 }} 
-              exit={{ y: 30, opacity: 0 }} 
-              className="bg-[#111c24] text-white w-full max-w-md p-8 rounded-[2.5rem] relative shadow-2xl border border-white/10"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold">✨ Create a New Space</h3>
-                <button 
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-xs"
-                  disabled={isSubmitting}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateRoomCard} className="flex flex-col gap-4">
-                
-                {/* ROOM ID INPUT */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Room ID</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={roomId} 
-                    onChange={(e) => setRoomId(e.target.value)} 
-                    placeholder="e.g., PRO_ZONE" 
-                    className="w-full bg-slate-900 border border-white/10 px-4 py-3 rounded-xl text-xs outline-none focus:border-[#46a4fe] transition-colors"
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                {/* DISPLAY TITLE INPUT */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Display Title</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={title} 
-                    onChange={(e) => setTitle(e.target.value)} 
-                    placeholder="e.g., Production Room" 
-                    className="w-full bg-slate-900 border border-white/10 px-4 py-3 rounded-xl text-xs outline-none focus:border-[#46a4fe] transition-colors"
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                {/* DESCRIPTION INPUT */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Description</label>
-                  <textarea 
-                    required 
-                    value={description} 
-                    onChange={(e) => setDescription(e.target.value)} 
-                    placeholder="Verified entry points..." 
-                    rows={3}
-                    className="w-full bg-slate-900 border border-white/10 px-4 py-3 rounded-xl text-xs outline-none focus:border-[#46a4fe] transition-colors resize-none"
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                {/* BANNER SELECTION BLOCK */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Cover Banner</label>
-                  <div 
-                    onClick={() => !isSubmitting && fileInputRef.current.click()}
-                    className="border-2 border-dashed border-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/5 hover:border-white/20 transition-all flex flex-col items-center justify-center min-h-22.5"
-                  >
-                    {coverPhoto ? (
-                      <div className="w-full h-20 relative rounded-lg overflow-hidden">
-                        <img src={coverPhoto} alt="Banner Preview" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-[10px] font-bold">Change Image</div>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-white/40 font-medium py-3">🖼️ Click to choose banner photo</p>
-                    )}
-                  </div>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    ref={fileInputRef} 
-                    onChange={handleImageUpload} 
-                    className="hidden" 
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                {/* SUBMIT EXECUTION BUTTON */}
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="bg-[#46a4fe] text-white font-bold h-12 rounded-xl text-xs uppercase tracking-wider shadow-md shadow-[#46a4fe]/20 hover:bg-[#358edb] transition-all active:scale-95 disabled:bg-slate-700 disabled:scale-100 mt-2 flex items-center justify-center"
-                >
-                  {isSubmitting ? "Generating Workspace..." : "Create Community"}
-                </button>
-              </form>
-            </motion.div>
+      <div className="w-full max-w-2xl flex flex-col sm:flex-row gap-3">
+        <div className="flex-1">
+          <input 
+            type="text" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="🔍 Search rooms by title..."
+            className="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-2xl text-xs outline-none focus:border-[#46a4fe] shadow-3xs font-medium"
+          />
+        </div>
+        
+        <div className="relative shrink-0">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="appearance-none bg-white border border-slate-200 pl-4 pr-10 py-2.5 rounded-2xl text-xs outline-none focus:border-[#46a4fe] shadow-3xs font-bold text-slate-600 cursor-pointer h-full min-w-[160px]"
+          >
+            <option value="recent">⏱️ Most Recent</option>
+            <option value="oldest">⏳ Oldest First</option>
+            <option value="alphabetical">🔤 Alphabetical (A-Z)</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 text-[10px]">
+            ▼
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      </div>
+
+      <CommunityGrid 
+        rooms={rooms}
+        isRoomsLoading={isRoomsLoading}
+        searchQuery={searchQuery}
+        sortBy={sortBy}
+        auth={auth}
+        handleJoinRoom={handleJoinRoom}
+      />
+
+      {/* Global Component Hooks */}
+      {renderSharedModal()}
+      {renderConfirmationModal()}
 
     </div>
   );

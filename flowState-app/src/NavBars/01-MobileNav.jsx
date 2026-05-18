@@ -24,7 +24,7 @@ export default function MobileNav() {
   return (
     <LayoutGroup id="mobileTabBarNavigation">
       {/* Target Mobile screens: flex by default, hidden completely on medium (md) and up */}
-      <nav className="flex md:hidden fixed bottom-0 left-0 right-0 bg-MobileNav h-28 items-center justify-around px-4 rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.3)] z-50 overflow-visible">
+      <nav className="flex md:hidden fixed bottom-0 left-0 right-0 bg-MobileNav h-28 items-center justify-around px-4 rounded-t-[2.5rem] z-50 overflow-visible">
         {tabs.map(({ id, label, Icon }) => {
           const isActive = location.pathname.startsWith(`/${id}`);
 
