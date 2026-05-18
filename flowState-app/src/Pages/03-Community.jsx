@@ -3,6 +3,7 @@ import { io } from "socket.io-client";
 import { db, auth } from "../Firebase"; 
 import { useParams, useNavigate } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion";
+
 import { 
   collection, 
   onSnapshot, 
@@ -35,7 +36,7 @@ export default function CommunityPage() {
   
   // Modal Trigger & Control States
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // 👈 Control flag for custom confirmation layout
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); 
   const [isEditing, setIsEditing] = useState(false); 
   const [showManageMenu, setShowManageMenu] = useState(false); 
 
@@ -232,7 +233,7 @@ export default function CommunityPage() {
     setIsModalOpen(true);
   };
 
-  // UNIFIED OPERATIONS SUBMIT (HANDLES DOCUMENT SAVES & UPDATE MODIFICATIONS)
+  // UNIFIED OPERATIONS SUBMIT 
   const handleFormSubmission = async (e) => {
     e.preventDefault();
     if (!title.trim() || !description.trim() || !roomId.trim()) return;
@@ -269,7 +270,7 @@ export default function CommunityPage() {
     }
   };
 
-  // FIRESTORE HARD PURGE FUNCTIONALITY (CALLED VIA USER CONFIRMATION MODAL)
+  // FIRESTORE PURGE FUNCTIONALITY 
   const handleConfirmDeleteRoom = async () => {
     if (!activeChatRoom) return;
     setIsSubmitting(true);
@@ -363,7 +364,7 @@ export default function CommunityPage() {
   const renderSharedModal = () => (
     <AnimatePresence>
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
@@ -481,8 +482,7 @@ export default function CommunityPage() {
   const renderConfirmationModal = () => (
     <AnimatePresence>
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          {/* Backdrop Layer */}
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
@@ -491,7 +491,6 @@ export default function CommunityPage() {
             className="absolute inset-0 bg-black/50 backdrop-blur-xs" 
           />
           
-          {/* Main Context Window */}
           <motion.div 
             initial={{ scale: 0.95, opacity: 0 }} 
             animate={{ scale: 1, opacity: 1 }} 
@@ -499,7 +498,6 @@ export default function CommunityPage() {
             className="relative p-4 w-full max-w-md max-h-full"
           >
             <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl p-4 md:p-6">
-              {/* Close Button X */}
               <button 
                 type="button" 
                 onClick={() => setIsDeleteModalOpen(false)}
@@ -512,9 +510,7 @@ export default function CommunityPage() {
                 <span className="sr-only">Close modal</span>
               </button>
               
-              {/* Context Container */}
               <div className="p-4 md:p-5 text-center">
-                {/* Warning Triangle/Exclamation Icon */}
                 <svg className="mx-auto mb-4 text-red-500 w-12 h-12 animate-bounce-short" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                   <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 13V8m0 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                 </svg>
@@ -523,7 +519,6 @@ export default function CommunityPage() {
                   Are you sure you want to delete <span className="text-red-600">"{activeChatRoom?.title}"</span>? This action removes all records and data history permanently.
                 </h3>
                 
-                {/* Interface Decision Triggers */}
                 <div className="flex items-center space-x-4 justify-center">
                   <button 
                     type="button" 
@@ -579,10 +574,15 @@ export default function CommunityPage() {
     );
   }
 
-  // VIEW RENDER LAYER 3: ACTIVE ROOM PANEL WINDOW
+  // VIEW RENDER LAYER 3: ACTIVE ROOM PANEL WINDOW (CHAT PORTAL)
   if (activeChatRoom) {
     return (
-      <div className="w-full h-full max-h-full flex flex-col bg-Body relative overflow-hidden z-20">
+      /* 🛠️ FIX: Changed static z-10 to dynamic "z-10 md:z-30". 
+         On mobile, it stays low so the bottom nav overlay sits on top. 
+         On tablet/PC (md:), it moves up to stack above side indicators correctly. */
+      <div className="w-full h-full max-h-screen flex flex-col bg-Body relative z-10 md:z-30 overflow-hidden">
+        
+        {/* CHAT HEADER */}
         <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0 shadow-xs z-30 relative">
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -602,7 +602,6 @@ export default function CommunityPage() {
               <span>👥 {members.length} Online</span>
             </div>
 
-            {/* 🛠️ Administrative Action Portal Dropdown */}
             <div className="relative">
               <button 
                 type="button"
@@ -621,7 +620,7 @@ export default function CommunityPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-1.5 w-40 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-left overflow-hidden"
+                    className="absolute right-0 mt-1.5 w-40 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-45 text-left overflow-hidden"
                   >
                     <button
                       type="button"
@@ -632,7 +631,7 @@ export default function CommunityPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setIsDeleteModalOpen(true)} // 👈 Triggers our new styled modal window 
+                      onClick={() => setIsDeleteModalOpen(true)} 
                       className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors border-t border-slate-100 flex items-center gap-2 cursor-pointer"
                     >
                       🗑️ Delete Space
@@ -644,8 +643,11 @@ export default function CommunityPage() {
           </div>
         </div>
 
-        <div className="flex-1 flex overflow-hidden w-full relative">
+        {/* CORE WORKSPACE INNER FLEX ROW */}
+        <div className="flex-1 flex w-full relative overflow-hidden">
           <div className="flex-1 flex flex-col h-full overflow-hidden">
+            
+            {/* MESSAGES VIEWPORT */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-3.5 bg-slate-50/40">
               {messages.map((msg) => {
                 const isSelfMessage = msg.senderId === auth.currentUser?.uid;
@@ -655,7 +657,7 @@ export default function CommunityPage() {
                       <span className="text-[10px] font-bold text-slate-500">{isSelfMessage ? "You" : msg.senderName}</span>
                       <span className="text-[8px] text-slate-400">{msg.timestamp}</span>
                     </div>
-                    <div className={`p-3 rounded-2xl text-xs font-medium shadow-2xs leading-relaxed wrap-break-word w-full ${isSelfMessage ? "bg-[#46a4fe] text-white rounded-tr-none shadow-md shadow-[#46a4fe]/20" : "bg-white text-slate-800 border border-slate-200 rounded-tl-none"}`}>
+                    <div className={`p-3 rounded-2xl text-xs font-medium shadow-2xl leading-relaxed wrap-break-word w-full ${isSelfMessage ? "bg-[#46a4fe] text-white rounded-tr-none shadow-md shadow-[#46a4fe]/20" : "bg-white text-slate-800 border border-slate-200 rounded-tl-none"}`}>
                       {msg.text}
                     </div>
                   </div>
@@ -664,7 +666,8 @@ export default function CommunityPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="bg-slate-50/90 backdrop-blur-md border-t border-slate-200/80 px-4 pt-4 pb-4 md:pb-5 shrink-0 z-10 max-md:mb-20">
+            {/* CHAT INPUT BAR CORE MODULE */}
+            <div className="bg-slate-50/90 backdrop-blur-md border-t border-slate-200/80 px-4 pt-4 pb-4 md:pb-5 shrink-0 z-10 max-md:pb-24">
               <form onSubmit={handleSendMessage} className="w-full max-w-6xl mx-auto flex gap-2 sm:gap-3">
                 <input
                   type="text"
@@ -678,6 +681,7 @@ export default function CommunityPage() {
             </div>
           </div>
 
+          {/* CHAT MEMBERS SIDEBAR PANEL */}
           <div className="hidden sm:flex flex-col w-72 bg-white border-l border-slate-200 h-full shrink-0 p-4 overflow-y-auto">
             <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Verified Accounts ({members.length})</h3>
             <div className="flex flex-col gap-3">
@@ -706,7 +710,9 @@ export default function CommunityPage() {
 
   // VIEW RENDER LAYER 4: MAIN DASHBOARD DISCOVERY GRID
   return (
-    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto text-slate-800 flex-1 flex flex-col gap-6 animate-fadeIn pb-28 relative bg-Body z-20">
+    /* 🛠️ FIX: Changed static z-10 to dynamic "z-10 md:z-30". 
+       Maintains mobile layouts beneath global nav bars, but pops up cleanly on tablet/desktop sizes. */
+    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto text-slate-800 flex-1 flex flex-col gap-6 animate-fadeIn pb-28 md:pb-8 relative bg-Body z-10 md:z-30">
       
       <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -737,31 +743,29 @@ export default function CommunityPage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="appearance-none bg-white border border-slate-200 pl-4 pr-10 py-2.5 rounded-2xl text-xs outline-none focus:border-[#46a4fe] shadow-3xs font-bold text-slate-600 cursor-pointer h-full min-w-[160px]"
+            className="bg-white border border-slate-200 shadow-3xs px-3 py-2.5 rounded-2xl text-xs outline-none focus:border-[#46a4fe] text-slate-700 font-bold cursor-pointer h-full"
           >
-            <option value="recent">⏱️ Most Recent</option>
+            <option value="recent">⏱️ Newest First</option>
             <option value="oldest">⏳ Oldest First</option>
-            <option value="alphabetical">🔤 Alphabetical (A-Z)</option>
+            <option value="alphabetical">🔤 Alphabetical</option>
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 text-[10px]">
-            ▼
-          </div>
         </div>
       </div>
 
-      <CommunityGrid 
-        rooms={rooms}
-        isRoomsLoading={isRoomsLoading}
-        searchQuery={searchQuery}
-        sortBy={sortBy}
-        auth={auth}
-        handleJoinRoom={handleJoinRoom}
-      />
+      {/* CORE ACTIVE GRID ELEMENT RENDER INSTANCE */}
+      <div className="w-full flex-1">
+        <CommunityGrid
+          rooms={rooms}
+          isRoomsLoading={isRoomsLoading}
+          searchQuery={searchQuery}
+          sortBy={sortBy}
+          handleJoinRoom={handleJoinRoom}
+        />
+      </div>
 
       {/* Global Component Hooks */}
       {renderSharedModal()}
       {renderConfirmationModal()}
-
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { db, auth } from "../../Firebase";
 
 export default function CommunityGrid({ 
   rooms, 

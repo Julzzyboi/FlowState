@@ -4,7 +4,8 @@ import PCNav from '../NavBars/03-PCNav';
 import TabletNav from '../NavBars/02-TabletNav';
 import MobileNav from  '../NavBars/01-MobileNav';
 
-export default function MainLayout() {
+// ✅ FIX 1: Accept 'user' as a prop from AppRouter
+export default function MainLayout({ user }) {
   const location = useLocation();
   const currentTab = location.pathname.substring(1) || 'dashboard';
 
@@ -24,14 +25,11 @@ export default function MainLayout() {
       </div>
 
       {/* 3. RESTORED: THE ORIGINAL MAIN PORT CANVAS */}
-      {/* CHANGED:
-        - bg-Body: Sets the workspace panel background color back to your custom light gray/blue palette.
-        - md:rounded-l-[2.5rem]: Restores the classic deep curve specifically along the left edge where it catches the sliding navigation indicator tabs!
-        - Removed margin padding offsets so it expands flush against the top, bottom, and right edges of the display just like your photo.
-      */}
       <main className="flex-1 h-full bg-Body md:rounded-l-[2.5rem] overflow-y-auto min-w-0 relative">
         {/* Your subpages (Dashboard, Community, etc.) render here */}
-        <Outlet />
+        
+        {/* ✅ FIX 2: Pass the user into the outlet context as authUser */}
+        <Outlet context={{ authUser: user }} />
       </main>
 
     </div>

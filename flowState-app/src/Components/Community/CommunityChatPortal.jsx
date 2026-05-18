@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import { io } from "socket.io-client";
-// Line 4 needs exactly FOUR dots:
+
+// ✅ FIX: Cleaned line 5 directory lookup path targeting CommunityGrid file directly
+import CommunityGrid from "./CommunityGrid";
+// ✅ FIX: Handled line 7 up-navigation mapping to step correctly out to Firebase configuration location
 import { db } from "../../Firebase";
+
 import { 
   collection, 
   onSnapshot, 
@@ -15,7 +19,7 @@ import {
   limit 
 } from "firebase/firestore";
 
-const SOCKET_SERVER_URL = "http://localhost:4000";
+const SOCKET_SERVER_URL = "http://localhost:5000";
 const socket = io(SOCKET_SERVER_URL, { autoConnect: false });
 
 export default function ChatPortal() {
@@ -145,7 +149,6 @@ export default function ChatPortal() {
     }
   };
 
-  // Lock UI framework until room retrieval confirmation finishes
   if (isRoomRestoring) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-Body min-h-[50vh] gap-4">

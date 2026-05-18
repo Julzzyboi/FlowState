@@ -7,7 +7,6 @@ import MainLayout from './Layouts/MainLayout';
 import DashboardPage from './Pages/01-Dashboard';
 import EducationPage from './Pages/02-Education';
 import CommunityPage from './Pages/03-Community'; 
-import CommunityGrid from './Components/Community/CommunityGrid'; 
 import ChatPortal from './Components/Community/CommunityChatPortal'; 
 import HistoryPage from './Pages/04-History';
 import AccountPage from './Pages/05-Account';
@@ -57,11 +56,9 @@ export default function AppRouter() {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="education" element={<EducationPage />} />
             
-            {/* 👥 Nested Community Framework */}
-            <Route path="community" element={<CommunityPage />}>
-              <Route index element={<CommunityGrid />} />
-              <Route path=":roomId" element={<ChatPortal />} />
-            </Route>
+            {/* 👥 Flattened Community Route Cluster */}
+            <Route path="community" element={<CommunityPage />} />
+            <Route path="community/:roomId" element={<ChatPortal />} />
             
             <Route path="history" element={<HistoryPage />} />
             <Route path="account" element={<AccountPage />} />
