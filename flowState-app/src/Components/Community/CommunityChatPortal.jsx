@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import { io } from "socket.io-client";
 // Line 4 needs exactly FOUR dots:
-import { db, auth } from "../../Firebase";
+import { db } from "../../Firebase";
 import { 
   collection, 
   onSnapshot, 

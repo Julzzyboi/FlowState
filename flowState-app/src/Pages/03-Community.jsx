@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { io } from "socket.io-client";
 import { db, auth } from "../Firebase"; 
 import { useParams, useNavigate } from "react-router-dom"; 
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   collection, 
   onSnapshot, 
@@ -14,31 +15,35 @@ import {
   limit 
 } from "firebase/firestore";
 
-const SOCKET_SERVER_URL = "http://localhost:4000";
+const SOCKET_SERVER_URL = "http://localhost:5000";
 const socket = io(SOCKET_SERVER_URL, { autoConnect: false });
 
 export default function CommunityPage() {
   const { roomId: urlRoomId } = useParams(); 
   const navigate = useNavigate();
 
+  // Component Infrastructure States
   const [rooms, setRooms] = useState([]);
   const [messages, setMessages] = useState([]); 
   const [members, setMembers] = useState([]); 
   const [isRoomsLoading, setIsRoomsLoading] = useState(true); 
-  
   const [authUser, setAuthUser] = useState(null); 
   const [authLoading, setAuthLoading] = useState(true);
-
-  // ✨ NEW: Initial route verification guard to stop layout flashes
   const [isRoomRestoring, setIsRoomRestoring] = useState(!!urlRoomId);
+  
+  // 🔘 Modal Window Trigger
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // 📝 RETAINED ORIGINAL INPUT FORM STATES
+  const [roomId, setRoomId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [roomId, setRoomId] = useState("");
   const [coverPhoto, setCoverPhoto] = useState(null);
   const fileInputRef = useRef(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Communication & Search States
+  const [searchQuery, setSearchQuery] = useState("");
   const [activeChatRoom, setActiveChatRoom] = useState(null);
   const [currentMessageText, setCurrentMessageText] = useState("");
   const messagesEndRef = useRef(null);
@@ -58,7 +63,7 @@ export default function CommunityPage() {
     return () => unsubscribeAuth();
   }, []);
 
-  // 2. GLOBAL ROOMS SYNC & URL-ROUTE SESSION RESTORATION
+  // 2. GLOBAL ROOMS SYNC & URL RESTORATION
   useEffect(() => {
     setIsRoomsLoading(true);
     const roomsCollectionRef = collection(db, "rooms");
@@ -71,13 +76,12 @@ export default function CommunityPage() {
       setRooms(activeRoomsList);
       setIsRoomsLoading(false);
     }, (error) => {
-      console.error("Firestore rooms sync error:", error);
+      console.error("Firestore sync error:", error);
       setIsRoomsLoading(false);
     });
 
     socket.connect();
 
-    // URL PARSER ON REFRESH
     if (urlRoomId) {
       const restoreRoomFromURL = async () => {
         try {
@@ -91,10 +95,9 @@ export default function CommunityPage() {
             navigate("/community");
           }
         } catch (err) {
-          console.error("Failed to restore chat view from URL routing state:", err);
+          console.error("Failed to restore session from URL:", err);
           navigate("/community");
         } finally {
-          // ✨ Lift the loading gate once the room data is completely loaded
           setIsRoomRestoring(false);
         }
       };
@@ -157,17 +160,33 @@ export default function CommunityPage() {
     };
   }, [activeChatRoom, authUser]);
 
+  // 🌟 ORIGINAL BASE64 COMPRESSION (Bypasses Firestore 1MB string size crashes)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => setCoverPhoto(reader.result);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 500; 
+        const scaleSize = MAX_WIDTH / img.width;
+        canvas.width = MAX_WIDTH;
+        canvas.height = img.height * scaleSize;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        setCoverPhoto(canvas.toDataURL("image/jpeg", 0.7));
+      };
+    };
     reader.readAsDataURL(file);
   };
 
+  // 🔄 RE-INTEGRATED TRANSACTION CARD ACTION 
   const handleCreateRoomCard = async (e) => {
     e.preventDefault();
     if (!title.trim() || !description.trim() || !roomId.trim()) return;
+    setIsSubmitting(true);
 
     const formattedId = roomId.trim().toUpperCase().replace(/\s+/g, "_");
     try {
@@ -177,10 +196,18 @@ export default function CommunityPage() {
         coverPhoto: coverPhoto || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=60",
         createdAt: Date.now()
       });
-      setTitle(""); setDescription(""); setRoomId(""); setCoverPhoto(null);
+      
+      // Clean form state variables on completion
+      setTitle(""); 
+      setDescription(""); 
+      setRoomId(""); 
+      setCoverPhoto(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+      setIsModalOpen(false); // Snap modal window shut on success!
     } catch (err) {
       console.error("Room creation error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -229,8 +256,6 @@ export default function CommunityPage() {
     }
   };
 
-  // 4. COMBINED APPLICATION ENGINE LOADING WRAPPER
-  // ✨ Added isRoomRestoring check here to freeze layouts until data routing finishes completely
   if (authLoading || isRoomRestoring) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-Body z-10 relative gap-4 min-h-[50vh]">
@@ -258,9 +283,9 @@ export default function CommunityPage() {
     );
   }
 
-  // ==========================================
-  // VIEW RENDER 1: THE DYNAMIC CHAT PORTAL
-  // ==========================================
+  // =========================================================
+  // VIEW RENDER 1: THE ACTIVE CHAT WINDOW
+  // =========================================================
   if (activeChatRoom) {
     return (
       <div className="w-full h-full max-h-full flex flex-col bg-Body relative overflow-hidden z-10">
@@ -338,41 +363,39 @@ export default function CommunityPage() {
     );
   }
 
-  // ==========================================
-  // VIEW RENDER 2: THE MAIN COMMUNITY GRID
-  // ==========================================
+  // =========================================================
+  // VIEW RENDER 2: THE COMMUNITIES MAIN SEARCH & GRID 
+  // =========================================================
   return (
     <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto text-slate-800 flex-1 flex flex-col gap-6 animate-fadeIn pb-28 relative bg-Body z-10">
-      <div className="border-b border-slate-200 pb-4">
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Community <span className="text-[#46a4fe]">Spaces</span></h1>
-        <p className="text-slate-500 text-xs sm:text-sm mt-1">Discover and access authenticated channel clusters.</p>
+      
+      {/* GRID PAGE HEADER */}
+      <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Community <span className="text-[#46a4fe]">Spaces</span></h1>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1">Discover and access authenticated channel clusters.</p>
+        </div>
+
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-[#46a4fe] text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-[#46a4fe]/10 hover:scale-[1.02] transition-all text-xs uppercase tracking-wider cursor-pointer"
+        >
+          + Add a Community
+        </button>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-4xl p-5 sm:p-6 shadow-md shadow-slate-100">
-        <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-wider mb-4">✨ Create a New Space</h2>
-        <form onSubmit={handleCreateRoomCard} className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Room ID</label>
-              <input type="text" required value={roomId} onChange={(e) => setRoomId(e.target.value)} placeholder="PRO_ZONE" className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded-xl text-xs outline-none focus:border-[#46a4fe] focus:bg-white transition-colors" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Display Title</label>
-              <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Production Room" className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded-xl text-xs outline-none focus:border-[#46a4fe] focus:bg-white transition-colors" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Description</label>
-              <input type="text" required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Verified entry points..." className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded-xl text-xs outline-none focus:border-[#46a4fe] focus:bg-white transition-colors" />
-            </div>
-          </div>
-          <div className="flex justify-between items-center border-t border-slate-100 pt-3">
-            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
-            <button type="button" onClick={() => fileInputRef.current.click()} className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs uppercase border border-slate-200 transition-colors shadow-3xs">🖼️ Choose Banner</button>
-            <button type="submit" className="bg-[#46a4fe] text-white font-bold py-3 px-6 rounded-xl text-xs uppercase tracking-wider shadow-md shadow-[#46a4fe]/20 hover:shadow-lg transition-all active:scale-98">Create Community</button>
-          </div>
-        </form>
+      {/* FILTER SEARCH FIELD */}
+      <div className="w-full max-w-md">
+        <input 
+          type="text" 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="🔍 Search rooms by title..."
+          className="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-2xl text-xs outline-none focus:border-[#46a4fe] shadow-3xs font-medium"
+        />
       </div>
 
+      {/* RENDER DYNAMIC GRID DISPLAY CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {isRoomsLoading ? (
           Array.from({ length: 4 }).map((_, indices) => (
@@ -391,7 +414,7 @@ export default function CommunityPage() {
           rooms.filter(r => r.title?.toLowerCase().includes(searchQuery.toLowerCase())).map((room) => (
             <div key={room.id} className="bg-white border border-slate-200 rounded-4xl shadow-md shadow-slate-100 hover:shadow-xl hover:border-slate-300 transition-all duration-300 flex flex-col justify-between overflow-hidden min-h-85 transform hover:-translate-y-0.5">
               <div className="w-full h-40 bg-slate-100 relative overflow-hidden">
-                <img src={room.coverPhoto} alt={room.title} className="w-full h-full object-cover" />
+                <img src={room.coverPhoto || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=60"} alt={room.title} className="w-full h-full object-cover" />
                 <span className="absolute top-3 left-3 bg-black/60 text-white text-[9px] font-mono px-2 py-0.5 rounded shadow-sm">{room.id}</span>
               </div>
               <div className="p-5 flex-1 flex flex-col justify-between">
@@ -431,6 +454,126 @@ export default function CommunityPage() {
           ))
         )}
       </div>
+
+      {/* =========================================================
+          MODAL INTERFACE CONTAINER (Retains all original inputs)
+          ========================================================= */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+            
+            {/* Backdrop Layer */}
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => !isSubmitting && setIsModalOpen(false)} 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+            />
+            
+            {/* Form Content Panel */}
+            <motion.div 
+              initial={{ y: 30, opacity: 0 }} 
+              animate={{ y: 0, opacity: 1 }} 
+              exit={{ y: 30, opacity: 0 }} 
+              className="bg-[#111c24] text-white w-full max-w-md p-8 rounded-[2.5rem] relative shadow-2xl border border-white/10"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold">✨ Create a New Space</h3>
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-xs"
+                  disabled={isSubmitting}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateRoomCard} className="flex flex-col gap-4">
+                
+                {/* ROOM ID INPUT */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Room ID</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={roomId} 
+                    onChange={(e) => setRoomId(e.target.value)} 
+                    placeholder="e.g., PRO_ZONE" 
+                    className="w-full bg-slate-900 border border-white/10 px-4 py-3 rounded-xl text-xs outline-none focus:border-[#46a4fe] transition-colors"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* DISPLAY TITLE INPUT */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Display Title</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={title} 
+                    onChange={(e) => setTitle(e.target.value)} 
+                    placeholder="e.g., Production Room" 
+                    className="w-full bg-slate-900 border border-white/10 px-4 py-3 rounded-xl text-xs outline-none focus:border-[#46a4fe] transition-colors"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* DESCRIPTION INPUT */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Description</label>
+                  <textarea 
+                    required 
+                    value={description} 
+                    onChange={(e) => setDescription(e.target.value)} 
+                    placeholder="Verified entry points..." 
+                    rows={3}
+                    className="w-full bg-slate-900 border border-white/10 px-4 py-3 rounded-xl text-xs outline-none focus:border-[#46a4fe] transition-colors resize-none"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* BANNER SELECTION BLOCK */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Cover Banner</label>
+                  <div 
+                    onClick={() => !isSubmitting && fileInputRef.current.click()}
+                    className="border-2 border-dashed border-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/5 hover:border-white/20 transition-all flex flex-col items-center justify-center min-h-22.5"
+                  >
+                    {coverPhoto ? (
+                      <div className="w-full h-20 relative rounded-lg overflow-hidden">
+                        <img src={coverPhoto} alt="Banner Preview" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-[10px] font-bold">Change Image</div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-white/40 font-medium py-3">🖼️ Click to choose banner photo</p>
+                    )}
+                  </div>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    ref={fileInputRef} 
+                    onChange={handleImageUpload} 
+                    className="hidden" 
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* SUBMIT EXECUTION BUTTON */}
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="bg-[#46a4fe] text-white font-bold h-12 rounded-xl text-xs uppercase tracking-wider shadow-md shadow-[#46a4fe]/20 hover:bg-[#358edb] transition-all active:scale-95 disabled:bg-slate-700 disabled:scale-100 mt-2 flex items-center justify-center"
+                >
+                  {isSubmitting ? "Generating Workspace..." : "Create Community"}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
