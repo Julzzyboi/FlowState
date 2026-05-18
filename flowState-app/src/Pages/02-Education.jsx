@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import '../Style/Education.css'
 
 /* ── Why Water Matters ── */
@@ -41,70 +41,59 @@ const cardData = [
   },
 ]
 
-/* ── Quick Facts ── */
-const quickFacts = [
+/* ── Hydration Guidelines ── */
+const hydrationGuidelines = [
   {
-    icon: '💧',
-    text: (
-      <>
-        Your body is <strong>60% water</strong>. Every cell, organ, and tissue depends on water to function.
-      </>
-    ),
+    time: 'Morning',
+    amount: '500ml',
+    note: 'Drink a glass right after waking up to rehydrate after sleep and kickstart your metabolism.',
+    icon: '🌅',
+    color: '#fef3c7',
+    border: '#fde68a',
+    textColor: '#92400e',
   },
   {
-    icon: '🌡️',
-    text: (
-      <>
-        In hot or humid climates, your water needs can increase by{' '}
-        <span className="highlight">up to 1.5× the normal amount</span>
-      </>
-    ),
+    time: 'Mid-Morning',
+    amount: '300–400ml',
+    note: 'Sip water steadily between breakfast and lunch to maintain focus and energy levels.',
+    icon: '☀️',
+    color: '#eff6ff',
+    border: '#bfdbfe',
+    textColor: '#1e40af',
   },
   {
-    icon: '🚿',
-    text: (
-      <>
-        Proper sanitation prevents{' '}
-        <span className="highlight">cholera, typhoid, and diarrhea</span> — diseases that still kill millions every year.
-      </>
-    ),
+    time: 'Afternoon',
+    amount: '500ml',
+    note: 'Drink before and during lunch. Staying hydrated after midday prevents the common energy slump.',
+    icon: '🌤️',
+    color: '#f0fdf4',
+    border: '#bbf7d0',
+    textColor: '#166534',
   },
   {
-    icon: '⚡',
-    text: (
-      <>
-        Feeling tired mid-afternoon? It's often dehydration. Try a glass of water before reaching for{' '}
-        <span className="highlight">caffeine</span>.
-      </>
-    ),
-  },
-  {
-    icon: '🌐',
-    text: (
-      <>
-        Clean water initiatives have protected{' '}
-        <span className="highlight">over 1.8 billion people</span> from waterborne diseases since 1990.
-      </>
-    ),
+    time: 'Evening',
+    amount: '300–400ml',
+    note: 'Continue hydrating in the afternoon. Avoid large amounts right before bed to prevent disrupted sleep.',
+    icon: '🌙',
+    color: '#f5f3ff',
+    border: '#ddd6fe',
+    textColor: '#5b21b6',
   },
 ]
 
-/* ── Hydration Schedule ── */
-const hydrationSchedule = [
-  { time: '7:00 AM',  amount: '500ml', note: 'Right after waking up',  done: true  },
-  { time: '10:00 AM', amount: '400ml', note: 'Mid-morning boost',       done: true  },
-  { time: '1:00 PM',  amount: '500ml', note: 'Before lunch',            done: false },
-  { time: '4:00 PM',  amount: '400ml', note: 'Afternoon refuel',        done: false },
-  { time: '7:00 PM',  amount: '500ml', note: 'Evening wind-down',       done: false },
+const hydrationFacts = [
+  { label: 'Daily Goal', value: '2–4L', desc: 'for an average adult' },
+  { label: 'More if Active', value: '+500ml', desc: 'per hour of exercise' },
+  { label: 'Hot Climate', value: '1.5×', desc: 'increase your intake' },
 ]
 
 /* ── Sanitation Steps ── */
 const sanitationSteps = [
-  { step: '01', title: 'Wet your hands',      desc: 'Use clean, running water — warm or cold.' },
-  { step: '02', title: 'Lather with soap',    desc: 'Scrub backs, between fingers, and under nails.' },
-  { step: '03', title: 'Scrub for 20 sec',    desc: 'Hum "Happy Birthday" twice as a timer.' },
-  { step: '04', title: 'Rinse thoroughly',    desc: 'Remove all soap under clean running water.' },
-  { step: '05', title: 'Dry with clean towel',desc: 'Use a clean towel or let hands air dry.' },
+  { step: '01', title: 'Wet your hands',       desc: 'Use clean, running water — warm or cold.' },
+  { step: '02', title: 'Lather with soap',     desc: 'Scrub backs, between fingers, and under nails.' },
+  { step: '03', title: 'Scrub for 20 sec',     desc: 'Hum "Happy Birthday" twice as a timer.' },
+  { step: '04', title: 'Rinse thoroughly',     desc: 'Remove all soap under clean running water.' },
+  { step: '05', title: 'Dry with clean towel', desc: 'Use a clean towel or let hands air dry.' },
 ]
 
 const sanitationStats = [
@@ -113,19 +102,31 @@ const sanitationStats = [
   { value: '297k', label: 'child deaths prevented yearly',           color: '#16a34a' },
 ]
 
+/* ── Quick Facts ── */
+const quickFacts = [
+  {
+    icon: '💧',
+    text: <>Your body is <strong>60% water</strong>. Every cell, organ, and tissue depends on water to function.</>,
+  },
+  {
+    icon: '🌡️',
+    text: <>In hot or humid climates, your water needs can increase by <span className="highlight">up to 1.5× the normal amount</span></>,
+  },
+  {
+    icon: '🚿',
+    text: <>Proper sanitation prevents <span className="highlight">cholera, typhoid, and diarrhea</span> — diseases that still kill millions every year.</>,
+  },
+  {
+    icon: '⚡',
+    text: <>Feeling tired mid-afternoon? It's often dehydration. Try a glass of water before reaching for <span className="highlight">caffeine</span>.</>,
+  },
+  {
+    icon: '🌐',
+    text: <>Clean water initiatives have protected <span className="highlight">over 1.8 billion people</span> from waterborne diseases since 1990.</>,
+  },
+]
+
 export default function EducationPage() {
-  const [checked, setChecked] = useState(hydrationSchedule.map((h) => h.done))
-
-  const toggleCheck = (i) =>
-    setChecked((prev) => prev.map((v, idx) => (idx === i ? !v : v)))
-
-  const totalMl = hydrationSchedule.reduce((s, h) => s + parseInt(h.amount), 0)
-  const doneMl  = hydrationSchedule
-    .filter((_, i) => checked[i])
-    .reduce((s, h) => s + parseInt(h.amount), 0)
-  const pct      = Math.round((doneMl / totalMl) * 100)
-  const doneCount = checked.filter(Boolean).length
-
   return (
     <div className="edu-page">
       <div className="edu-outer">
@@ -159,13 +160,17 @@ export default function EducationPage() {
               <div
                 key={card.id}
                 className="edu-info-card"
-                style={{ background: card.bg, border: `1px solid ${card.border}` }}
+                style={{ border: `1px solid ${card.border}` }}
               >
-                <div className="edu-icon-circle" style={{ background: card.iconBg }}>
+                {/* Top colored section with image */}
+                <div className="edu-card-image-section" style={{ background: card.bg }}>
                   <img src={card.img} alt={card.title} className="edu-card-img" />
                 </div>
-                <h3 className="edu-card-title">{card.title}</h3>
-                <p className="edu-card-desc">{card.desc}</p>
+                {/* Bottom white section with text */}
+                <div className="edu-card-text-section">
+                  <h3 className="edu-card-title">{card.title}</h3>
+                  <p className="edu-card-desc">{card.desc}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -174,35 +179,45 @@ export default function EducationPage() {
         {/* ── Hydration & Sanitation ── */}
         <div className="edu-two-col-row">
 
-          {/* Hydration */}
+          {/* ── Hydration Guidelines ── */}
           <div className="edu-panel">
             <div className="edu-panel-header">
               <h2 className="edu-panel-title">💧 Hydration</h2>
-              <span className="edu-panel-badge">{doneCount}/{hydrationSchedule.length} done</span>
+              <span className="edu-guide-tag">Guidelines</span>
             </div>
 
-            <div className="edu-progress-wrap">
-              <div className="edu-progress-track">
-                <div className="edu-progress-fill" style={{ width: `${pct}%` }} />
-              </div>
-              <span className="edu-progress-label">{doneMl}ml / {totalMl}ml ({pct}%)</span>
+            <p className="edu-guide-intro">
+              Spreading your water intake throughout the day is more effective than drinking large amounts at once.
+              Here's a simple guide to follow:
+            </p>
+
+            {/* Quick stats row */}
+            <div className="edu-hyd-stats-row">
+              {hydrationFacts.map((f, i) => (
+                <div key={i} className="edu-hyd-stat">
+                  <span className="edu-hyd-stat-value">{f.value}</span>
+                  <span className="edu-hyd-stat-label">{f.label}</span>
+                  <span className="edu-hyd-stat-desc">{f.desc}</span>
+                </div>
+              ))}
             </div>
 
-            <div className="edu-schedule-list">
-              {hydrationSchedule.map((item, i) => (
+            {/* Time-of-day guidelines */}
+            <div className="edu-guide-list">
+              {hydrationGuidelines.map((g, i) => (
                 <div
                   key={i}
-                  className={`edu-schedule-item ${checked[i] ? 'checked' : ''}`}
-                  onClick={() => toggleCheck(i)}
+                  className="edu-guide-item"
+                  style={{ background: g.color, border: `1px solid ${g.border}` }}
                 >
-                  <div className={`edu-checkbox ${checked[i] ? 'checked' : ''}`}>
-                    {checked[i] && <span className="edu-checkmark">✓</span>}
+                  <div className="edu-guide-left">
+                    <span className="edu-guide-icon">{g.icon}</span>
+                    <div className="edu-guide-meta">
+                      <span className="edu-guide-time" style={{ color: g.textColor }}>{g.time}</span>
+                      <span className="edu-guide-amount" style={{ color: g.textColor }}>{g.amount}</span>
+                    </div>
                   </div>
-                  <div className="edu-schedule-text">
-                    <span className={`edu-schedule-time ${checked[i] ? 'checked' : ''}`}>{item.time}</span>
-                    <span className="edu-schedule-note">{item.note}</span>
-                  </div>
-                  <span className={`edu-schedule-amount ${checked[i] ? 'checked' : ''}`}>{item.amount}</span>
+                  <p className="edu-guide-note">{g.note}</p>
                 </div>
               ))}
             </div>
@@ -210,12 +225,12 @@ export default function EducationPage() {
             <div className="edu-tip-box">
               <span className="edu-tip-icon">💡</span>
               <p className="edu-tip-text">
-                Spread your intake evenly — drinking too much at once strains your kidneys.
+                Spread your intake evenly throughout the day — drinking too much water at once can strain your kidneys.
               </p>
             </div>
           </div>
 
-          {/* Sanitation & Hygiene */}
+          {/* ── Sanitation & Hygiene ── */}
           <div className="edu-panel">
             <div className="edu-panel-header">
               <h2 className="edu-panel-title">🧼 Sanitation &amp; Hygiene</h2>
