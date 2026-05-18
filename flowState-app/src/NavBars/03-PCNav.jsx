@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, LayoutGroup } from 'framer-motion';
 import { 
   DashboardIcon, 
@@ -16,16 +16,18 @@ const tabsPC = [
   { id: 'history', label: 'History', Icon: HistoryIcon },
 ];
 
-export default function PCNav({ activeTab }) {
+export default function PCNav() {
   const [isMinimized, setIsMinimized] = useState(false);
+  
+  // ✨ Get the live location path from React Router
+  const location = useLocation();
 
   return (
     <LayoutGroup id="sidebarNavigation">
-      {/* CHANGED: Lowered navbar container to z-10 so it sits behind the main content area */}
-      <nav className={`hidden lg:flex ${isMinimized ? 'w-24' : 'w-64'} bg-MobileNav h-screen sticky top-0 z-10  flex-col py-8 transition-all duration-500 overflow-visible`}>
+      {/* Navbar Container */}
+      <nav className={`hidden lg:flex ${isMinimized ? 'w-24' : 'w-64'} bg-MobileNav h-screen sticky top-0 z-10 flex-col py-8 transition-all duration-500 overflow-visible`}>
         
         {/* Logo Section */}
-        {/* CHANGED: Added z-30 to ensure the logo button stays clickable on top */}
         <div className={`flex items-center mb-16 transition-all duration-500 relative z-30 ${isMinimized ? 'justify-center px-0' : 'px-6'}`}>
           <button 
             onClick={() => setIsMinimized(!isMinimized)}
@@ -42,9 +44,13 @@ export default function PCNav({ activeTab }) {
         {/* Nav Wrapper */}
         <div className={`flex flex-col flex-1 relative transition-all duration-500 ${isMinimized ? 'ml-0' : 'ml-6'} overflow-visible`}>
           
+          {/* Main Loop Tabs */}
           <div className="flex flex-col gap-2 relative">
             {tabsPC.map(({ id, label, Icon }) => {
-              const isActive = activeTab === id;
+              // ✨ BUG FIX: Check if the current URL starts with the tab's path segment.
+              // This keeps 'community' highlighted even when the path shifts to '/community/pro_zone'
+              const isActive = location.pathname.startsWith(`/${id}`);
+
               return (
                 <Link
                   key={id}
@@ -53,8 +59,7 @@ export default function PCNav({ activeTab }) {
                     ${isMinimized ? 'justify-center pl-0' : 'justify-start pl-4'}
                     ${isActive ? 'text-MobileNav' : 'text-white/80 hover:text-cyan-400'}`}
                 >
-                  {/* 1. THE SLIDING INDICATOR */}
-                  {/* CHANGED: Set z-0 so it ducks behind the main content block, and extended right offset to hide raw seams */}
+                  {/* SLIDING INDICATOR */}
                   {isActive && (
                     <motion.div
                       layoutId="globalNavIndicator"
@@ -68,7 +73,6 @@ export default function PCNav({ activeTab }) {
                   )}
 
                   {/* CONTENT WRAPPER */}
-                  {/* CHANGED: Bumped up to z-30 so textual elements render crisp and clear over the background elements */}
                   <div className="relative z-30 flex items-center transition-transform duration-150 active:scale-90">
                     <div className="w-10 h-10 flex items-center justify-center shrink-0">
                       <Icon className={`transition-all duration-500 ${isActive ? 'text-MobileNav' : 'text-white'} ${isMinimized ? 'w-9 h-9' : 'w-7 h-7'}`} />
@@ -84,34 +88,38 @@ export default function PCNav({ activeTab }) {
 
           {/* Account Button at Bottom */}
           <div className="mt-auto pb-8">
-            <Link
-              to="/account"
-              className={`relative flex items-center w-full h-16 group outline-none cursor-pointer overflow-visible
-                ${isMinimized ? 'justify-center pl-0' : 'justify-start pl-4'}
-                ${activeTab === 'account' ? 'text-MobileNav' : 'text-white/80 hover:text-cyan-400'}`}
-            >
-              {/* CHANGED: Set z-0 and matched right spacing offsets */}
-              {activeTab === 'account' && (
-                <motion.div
-                  layoutId="globalNavIndicator"
-                  className="absolute -right-6.5 inset-y-0 w-[calc(100%+32px)] bg-Body rounded-l-full z-0
-                    before:content-[''] before:absolute before:top-[-30.5px] before:right-6 before:w-8 before:h-8
-                    before:rounded-br-[30px] before:shadow-[10px_10px_0_0_#EEF5FD]
-                    after:content-[''] after:absolute after:bottom-[-30.5px] after:right-6 after:w-8 after:h-8
-                    after:rounded-tr-[30px] after:shadow-[10px_-10px_0_0_#EEF5FD]"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-              {/* CHANGED: Set z-30 */}
-              <div className="relative z-30 flex items-center transition-transform duration-150 active:scale-90">
-                <div className="w-10 h-10 flex items-center justify-center shrink-0">
-                  <AccountIcon className={`transition-all duration-500 ${activeTab === 'account' ? 'text-MobileNav' : 'text-white'} ${isMinimized ? 'w-9 h-9' : 'w-7 h-7'}`} />
-                </div>
-                <span className={`font-bold transition-all duration-500 whitespace-nowrap overflow-hidden ${isMinimized ? 'w-0 opacity-0 ml-0' : 'w-auto opacity-100 ml-3 text-xl'}`}>
-                  Account
-                </span>
-              </div>
-            </Link>
+            {/* ✨ Update the active check for your separate account link too */}
+            {(() => {
+              const isAccountActive = location.pathname.startsWith('/account');
+              return (
+                <Link
+                  to="/account"
+                  className={`relative flex items-center w-full h-16 group outline-none cursor-pointer overflow-visible
+                    ${isMinimized ? 'justify-center pl-0' : 'justify-start pl-4'}
+                    ${isAccountActive ? 'text-MobileNav' : 'text-white/80 hover:text-cyan-400'}`}
+                >
+                  {isAccountActive && (
+                    <motion.div
+                      layoutId="globalNavIndicator"
+                      className="absolute -right-6.5 inset-y-0 w-[calc(100%+32px)] bg-Body rounded-l-full z-0
+                        before:content-[''] before:absolute before:top-[-30.5px] before:right-6 before:w-8 before:h-8
+                        before:rounded-br-[30px] before:shadow-[10px_10px_0_0_#EEF5FD]
+                        after:content-[''] after:absolute after:bottom-[-30.5px] after:right-6 after:w-8 after:h-8
+                        after:rounded-tr-[30px] after:shadow-[10px_-10px_0_0_#EEF5FD]"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <div className="relative z-30 flex items-center transition-transform duration-150 active:scale-90">
+                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
+                      <AccountIcon className={`transition-all duration-500 ${isAccountActive ? 'text-MobileNav' : 'text-white'} ${isMinimized ? 'w-9 h-9' : 'w-7 h-7'}`} />
+                    </div>
+                    <span className={`font-bold transition-all duration-500 whitespace-nowrap overflow-hidden ${isMinimized ? 'w-0 opacity-0 ml-0' : 'w-auto opacity-100 ml-3 text-xl'}`}>
+                      Account
+                    </span>
+                  </div>
+                </Link>
+              );
+            })()}
           </div>
         </div>
       </nav>

@@ -1,8 +1,9 @@
+// src/Firebase.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import { getAuth, GoogleAuthProvider } from "firebase/auth"; 
 
-// src/firebase.js - Look closely at the lowercase "import"
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -13,8 +14,12 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+// Log to verify everything is live in your browser console
+console.log("Firebase Project ID Connected:", firebaseConfig.projectId);
+
 const app = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 export const auth = getAuth(app); 
 export const googleProvider = new GoogleAuthProvider(); 
+export const storage = getStorage(app);

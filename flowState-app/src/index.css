@@ -5,6 +5,7 @@
   --color-brand-main: #1466b8;
   --color-brand-water: #4c95dd;
   --color-brand-sky: #f0f7ff;
+  --color-modal: oklch(27.962% 0.11933 261.614);
 
   /*? Customized Colors  */
   --color-Body : #EEF5FD;
