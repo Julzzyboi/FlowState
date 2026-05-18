@@ -14,4 +14,3 @@ cd flowState-backend:
 
     npm i socket.io
     
-    npm i nodemailer

@@ -364,7 +364,7 @@ export default function CommunityPage() {
   const renderSharedModal = () => (
     <AnimatePresence>
       {isModalOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
@@ -482,7 +482,7 @@ export default function CommunityPage() {
   const renderConfirmationModal = () => (
     <AnimatePresence>
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-110 flex items-center justify-center p-4">
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
@@ -577,10 +577,8 @@ export default function CommunityPage() {
   // VIEW RENDER LAYER 3: ACTIVE ROOM PANEL WINDOW (CHAT PORTAL)
   if (activeChatRoom) {
     return (
-      /* 🛠️ FIX: Changed static z-10 to dynamic "z-10 md:z-30". 
-         On mobile, it stays low so the bottom nav overlay sits on top. 
-         On tablet/PC (md:), it moves up to stack above side indicators correctly. */
-      <div className="w-full h-full max-h-screen flex flex-col bg-Body relative z-10 md:z-30 overflow-hidden">
+      /* ✅ FIX: Set complete structural overflow boundaries and explicit height math for mobile nav spacing */
+      <div className="w-full h-full max-h-screen flex flex-col bg-Body relative z-20 overflow-hidden">
         
         {/* CHAT HEADER */}
         <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0 shadow-xs z-30 relative">
@@ -620,7 +618,7 @@ export default function CommunityPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-1.5 w-40 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-45 text-left overflow-hidden"
+                    className="absolute right-0 mt-1.5 w-40 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-left overflow-hidden"
                   >
                     <button
                       type="button"
@@ -657,7 +655,7 @@ export default function CommunityPage() {
                       <span className="text-[10px] font-bold text-slate-500">{isSelfMessage ? "You" : msg.senderName}</span>
                       <span className="text-[8px] text-slate-400">{msg.timestamp}</span>
                     </div>
-                    <div className={`p-3 rounded-2xl text-xs font-medium shadow-2xl leading-relaxed wrap-break-word w-full ${isSelfMessage ? "bg-[#46a4fe] text-white rounded-tr-none shadow-md shadow-[#46a4fe]/20" : "bg-white text-slate-800 border border-slate-200 rounded-tl-none"}`}>
+                    <div className={`p-3 rounded-2xl text-xs font-medium shadow-2xs leading-relaxed wrap-break-word w-full ${isSelfMessage ? "bg-[#46a4fe] text-white rounded-tr-none shadow-md shadow-[#46a4fe]/20" : "bg-white text-slate-800 border border-slate-200 rounded-tl-none"}`}>
                       {msg.text}
                     </div>
                   </div>
@@ -667,6 +665,7 @@ export default function CommunityPage() {
             </div>
 
             {/* CHAT INPUT BAR CORE MODULE */}
+            {/* ✅ FIX: Re-introduced 'max-md:pb-24' inside structural wrapper so it builds safe room for the bottom MobileNav */}
             <div className="bg-slate-50/90 backdrop-blur-md border-t border-slate-200/80 px-4 pt-4 pb-4 md:pb-5 shrink-0 z-10 max-md:pb-24">
               <form onSubmit={handleSendMessage} className="w-full max-w-6xl mx-auto flex gap-2 sm:gap-3">
                 <input
@@ -710,9 +709,8 @@ export default function CommunityPage() {
 
   // VIEW RENDER LAYER 4: MAIN DASHBOARD DISCOVERY GRID
   return (
-    /* 🛠️ FIX: Changed static z-10 to dynamic "z-10 md:z-30". 
-       Maintains mobile layouts beneath global nav bars, but pops up cleanly on tablet/desktop sizes. */
-    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto text-slate-800 flex-1 flex flex-col gap-6 animate-fadeIn pb-28 md:pb-8 relative bg-Body z-10 md:z-30">
+    /* ✅ FIX: Altered fallback bottom spacing structure 'pb-28' to dynamic 'pb-28 md:pb-8' to handle grid spacing */
+    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto text-slate-800 flex-1 flex flex-col gap-6 animate-fadeIn pb-28 md:pb-8 relative bg-Body z-20">
       
       <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
