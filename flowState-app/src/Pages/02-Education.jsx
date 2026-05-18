@@ -3,12 +3,16 @@
 import React from 'react'
 
 import '../Style/Education.css'
-
 import SectionTitle from '../Components/Education/SectionTitle'
 import QuickFactItem from '../Components/Education/QuickFactItem'
 import HydrationGuideItem from '../Components/Education/HydrationGuideItem'
 import InfoCard from '../Components/Education/InfoCard'
 import QuizSection from '../Components/Education/QuizSection'
+
+import BrainSvg from '../assets/brain.svg'
+import faucetSvg from '../assets/faucet.svg'
+import soapSvg from '../assets/soap.svg'
+import waterSvg from '../assets/water.svg'
 
 /* ─────────────────────────────────────
    WHY WATER MATTERS
@@ -17,42 +21,38 @@ import QuizSection from '../Components/Education/QuizSection'
 const cardData = [
   {
     id: 1,
-    img: '',
+    img: waterSvg,
     title: 'Why You Need 2–4L Daily',
     desc:
       'Water regulates body temperature, carries nutrients, and removes waste from the body.',
     bg: '#fef9ec',
-    border: '#fde68a',
   },
 
   {
     id: 2,
-    img: '',
+    img: soapSvg,
     title: 'Handwashing & Hygiene',
     desc:
       'Proper handwashing prevents common infections and disease transmission.',
     bg: '#eff6ff',
-    border: '#bfdbfe',
   },
 
   {
     id: 3,
-    img: '',
+    img: BrainSvg,
     title: 'Dehydration & Brain Health',
     desc:
       'Even mild dehydration affects focus, memory, and energy levels.',
     bg: '#f0fdf4',
-    border: '#bbf7d0',
   },
 
   {
     id: 4,
-    img: '',
+    img: faucetSvg,
     title: 'Clean Water Access',
     desc:
       'Billions of people still lack access to safe drinking water.',
     bg: '#f0f9ff',
-    border: '#bae6fd',
   },
 ]
 

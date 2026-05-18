@@ -207,57 +207,10 @@ export default function AccountPage() {
 
               </div>
 
-              {/* OVERVIEW CARDS */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-8">
+              {/* DASHBOARD CONTENT */}
+              <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_320px] gap-6 mt-8">
 
-                <div className="bg-white border border-slate-100 rounded-3xl p-6">
-
-                  <p className="text-slate-400 text-sm">
-                    Account Type
-                  </p>
-
-                  <h4 className="mt-3 font-bold text-xl text-slate-800">
-
-                    {providerName}
-
-                  </h4>
-
-                </div>
-
-                <div className="bg-white border border-slate-100 rounded-3xl p-6">
-
-                  <p className="text-slate-400 text-sm">
-                    Authentication
-                  </p>
-
-                  <h4 className="mt-3 font-bold text-xl text-green-600">
-
-                    Secure Login
-
-                  </h4>
-
-                </div>
-
-                <div className="bg-white border border-slate-100 rounded-3xl p-6">
-
-                  <p className="text-slate-400 text-sm">
-                    Session Status
-                  </p>
-
-                  <h4 className="mt-3 font-bold text-xl text-[#2563eb]">
-
-                    Active Session
-
-                  </h4>
-
-                </div>
-
-              </div>
-
-              {/* EXTRA SECTIONS */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 flex-1">
-
-                {/* ACTIVITY */}
+                {/* RECENT ACTIVITY */}
                 <div className="bg-white border border-slate-100 rounded-3xl p-6 flex flex-col">
 
                   <h4 className="text-xl font-bold text-slate-800">
@@ -316,68 +269,48 @@ export default function AccountPage() {
 
                 </div>
 
-                {/* SECURITY */}
-                <div className="bg-white border border-slate-100 rounded-3xl p-6 flex flex-col">
+                {/* SIDE INFO */}
+                <div className="flex flex-col gap-5">
 
-                  <h4 className="text-xl font-bold text-slate-800">
+                  <div className="bg-white border border-slate-100 rounded-3xl p-6">
 
-                    Security Overview
+                    <p className="text-slate-400 text-sm">
+                      Account Type
+                    </p>
 
-                  </h4>
+                    <h4 className="mt-3 font-bold text-xl text-slate-800">
 
-                  <div className="mt-6 space-y-5">
+                      {providerName}
 
-                    <div className="flex items-center justify-between">
+                    </h4>
 
-                      <span className="text-slate-500">
+                  </div>
 
-                        Email Verification
+                  <div className="bg-white border border-slate-100 rounded-3xl p-6">
 
-                      </span>
+                    <p className="text-slate-400 text-sm">
+                      Authentication
+                    </p>
 
-                      <span className="font-semibold text-green-600">
+                    <h4 className="mt-3 font-bold text-xl text-green-600">
 
-                        Enabled
+                      Secure Login
 
-                      </span>
+                    </h4>
 
-                    </div>
+                  </div>
 
-                    <div className="border-t border-slate-100" />
+                  <div className="bg-white border border-slate-100 rounded-3xl p-6">
 
-                    <div className="flex items-center justify-between">
+                    <p className="text-slate-400 text-sm">
+                      Session Status
+                    </p>
 
-                      <span className="text-slate-500">
+                    <h4 className="mt-3 font-bold text-xl text-[#2563eb]">
 
-                        Authentication Provider
+                      Active Session
 
-                      </span>
-
-                      <span className="font-semibold text-slate-700">
-
-                        Google OAuth
-
-                      </span>
-
-                    </div>
-
-                    <div className="border-t border-slate-100" />
-
-                    <div className="flex items-center justify-between">
-
-                      <span className="text-slate-500">
-
-                        Account Protection
-
-                      </span>
-
-                      <span className="font-semibold text-[#2563eb]">
-
-                        Secure
-
-                      </span>
-
-                    </div>
+                    </h4>
 
                   </div>
 
