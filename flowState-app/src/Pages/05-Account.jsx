@@ -1,5 +1,5 @@
 import React from 'react';
-import { auth } from '../firebase'; // Import your app auth controller
+import { auth } from '../Firebase'; // Import your app auth controller
 import { signOut } from 'firebase/auth';
 
 export default function AccountPage() {
